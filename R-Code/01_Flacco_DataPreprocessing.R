@@ -14,7 +14,7 @@
 #Special Preprocessing techniques for the special needs of the flacco dataset
 
 #load dataset
-load("E:/Dokumente/10 Studium/20 MSc Information Systems/10 1. Semester/20 Data Analytics 1/30 Case Study/3-flacco1.RData")
+load("../3-flacco1.RData")
 str(feats)
 
 #exclude the technical features at the beginning of the dataset (such as repl or seed) -> first 7 features
