@@ -45,7 +45,50 @@ bfeats.ela_local= bfeats[,seq(46,59)]
 #------------------------------------------------------------------------------------------------------------
 
 #1.1 Visualization
+#Visualization of the dataset
 
+#Scatterplots
+#function to print histograms to the diagonal panels of a scatterplot
+panel.hist2 <- function(x, ...) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col="red", ...)
+}
+
+#function to print corelations to the upper panels of a scatterplot
+panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) { 
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  rsp <- abs(cor(x,y,method="spearman"))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt2 <- format(c(rsp, 0.123456789), digits=digits)[1]
+  text(0.5, 0.5, paste(txt," / ", txt2,sep=""), cex = cex.cor,col="blue")
+}
+
+#function to draw a scatterplot with custom upper and diagonal panels
+pairs.custom <- function(x) {
+  pairs(x, panel = function (x, y, ...) {
+    points(x, y, ...)
+    abline(lm(y ~ x), col = "blue") 
+  }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2)
+}
+
+### Lucas:  which scatterplots do make sense? Scatterplots with feature groups won't tell us anything 
+###         important I would guess. Maybe scatterplots between the several mean columns of the feature
+###         groups? Or include some of the setup features to show which setup feature influences which 
+###         other feature?
+
+
+#scatterplot3d
+#include package
+require(scatterplot3d) 
+
+
+#scatterplot3d(x,y,z, angle=55, pch=19, cex.lab=2, type=”h”)
 
 
 #-----------------------------------------------------------------------------------------------------------
