@@ -18,8 +18,11 @@ load("../3-flacco1.RData")
 str(feats)
 
 #exclude the technical features at the beginning of the dataset (such as repl or seed) -> first 7 features
-#these features are input parameter to the dataset generator and thus not subject to any further analysis
-afeats = feats[,-seq(1,7)]
+#these features are input parameter to the dataset generator and thus not subject to most of further analysis
+#in some analysis it is paid attention to and then we will access by getting this information from metadata
+#topology 6 is kept in the dataset as it is some feature of the problem instance (see papers)
+afeats = feats[,-c(seq(1,5),7)]
+metadata = feats[,c(seq(1,5),7)]
 
 #exclude features with variance of zero
 #these do not give further information on the problem instances
@@ -32,12 +35,12 @@ bfeats = afeats[,-var0feats]
 
 #result is a dataset of 58 expensive features based on the flacco dataset which is used for further tasks
 #feature groups (used for detailed inter-group / intra-group analysis)
-bfeats.cm_angle = bfeats[,seq(1,9)]
-bfeats.cm_conv = bfeats[,seq(10,14)]
-bfeats.cm_grad = bfeats[,seq(15,17)]
-bfeats.ela_conv = bfeats[,seq(18,21)]
-bfeats.ela_curv = bfeats[,seq(22,44)]
-bfeats.ela_local= bfeats[,seq(45,58)]
+bfeats.cm_angle = bfeats[,seq(2,10)]
+bfeats.cm_conv = bfeats[,seq(11,15)]
+bfeats.cm_grad = bfeats[,seq(16,18)]
+bfeats.ela_conv = bfeats[,seq(19,22)]
+bfeats.ela_curv = bfeats[,seq(23,45)]
+bfeats.ela_local= bfeats[,seq(46,59)]
 
 #------------------------------------------------------------------------------------------------------------
 
