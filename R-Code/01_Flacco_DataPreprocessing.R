@@ -252,6 +252,32 @@ scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, pr
                      "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
 
 
+
+#mkubicki
+#function:
+#cor.detect: display all correlations that have at least value l between columns in given dataset
+#parameters:
+#x: data.frame to inspect
+#l: minimum correlation. display correlation if absolute of cor is >=l
+cor.detect <- function(x, l=0) {
+  for(c in 1:ncol(x)) {
+    col1 = colnames(bfeats)[c]
+    if(c+1 < ncol(x)){
+      for(d in (c+1):ncol(x)) {
+        col2 = colnames(bfeats)[d]
+        cur.cor = cor(x[c], x[d])
+        #print(paste("cor(",col1, ",", col2,")=", cur.cor))
+        if(abs(cur.cor) > l) {
+          print(paste("cor(",col1, ",", col2,") =", cur.cor))
+        }
+      }
+    }
+  }
+}
+
+cor.detect(bfeats)
+cor.detect(bfeats, l=.9)
+
 #-----------------------------------------------------------------------------------------------------------
 
 #1.2 Outlier Detection
