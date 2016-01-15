@@ -275,8 +275,25 @@ cor.detect <- function(x, l=0) {
   }
 }
 
+
+#find all correlations
 cor.detect(bfeats)
+
+#find cor>=0.9
 cor.detect(bfeats, l=.9)
+
+#high correlations exist especially between measures in the following feature groups:
+#ela_curv and ela_curv
+#ela_local and ela_local
+#ela_curv and ela_local
+
+#moreover, the following correlations are also high:
+#"cor( cm_angle.dist_ctr2best.mean , cm_angle.dist_ctr2worst.mean ) = 0.96488130456667"
+#"cor( cm_angle.y_ratio_best2worst.mean , cm_grad.mean ) = -0.941673351717285"
+#"cor( cm_conv.convex.soft , cm_conv.concave.soft ) = -1"
+#"cor( ela_conv.conv_prob , ela_conv.lin_dev.orig ) = -0.948706591111724"
+#"cor( ela_conv.costs_runtime , ela_curv.costs_runtime ) = 0.956381579042816"
+#"cor( ela_conv.costs_runtime , ela_local.costs_runtime ) = 0.961137737157008"
 
 #-----------------------------------------------------------------------------------------------------------
 
