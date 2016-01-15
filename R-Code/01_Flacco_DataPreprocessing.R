@@ -267,7 +267,7 @@ cor.detect <- function(x, l=0) {
         col2 = colnames(bfeats)[d]
         cur.cor = cor(x[c], x[d])
         #print(paste("cor(",col1, ",", col2,")=", cur.cor))
-        if(abs(cur.cor) > l) {
+        if(abs(cur.cor) >= l) {
           print(paste("cor(",col1, ",", col2,") =", cur.cor))
         }
       }
