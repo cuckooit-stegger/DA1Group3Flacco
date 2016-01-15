@@ -255,7 +255,7 @@ scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, pr
 
 #mkubicki
 #function:
-#cor.detect: display all correlations that have at least value l between columns in given dataset
+#cor.detect: display all correlations between columns in given dataset that have at least value l
 #parameters:
 #x: data.frame to inspect
 #l: minimum correlation. display correlation if absolute of cor is >=l
