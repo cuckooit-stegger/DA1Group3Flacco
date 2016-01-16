@@ -401,6 +401,7 @@ mapply(normal.custom, x=princomp_feat_groups[,2:4], title=colnames(princomp_feat
 mapply(normal.custom, x=princomp_feat_groups[,5:7], title=colnames(princomp_feat_groups)[5:7])
 
 #CSiemen
+#OBSERVATION
 #apparently we cannot hold the assumption that the features in the dataset are normally distributed
 #when looking at the whole dataset.
 #Indeed there are two reasons for not looking on the whole dataset when testing for normality:
@@ -465,6 +466,94 @@ mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1
 
 #Tests for multivariate normal distribution:
 
+#custom function for display x^2 plot for testing multivariate normal distribution
+require(MASS)
+normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
+  cm = colMeans(data)
+  S = cov(data)
+  #calculating distances in the multidimensional room
+  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
+  
+  #resetting layout
+  layout(matrix(1:1, ncol=1, nrow=1))
+  #plotting x^2 plot with datpoints
+  #df = number of cols in data
+  plot(qc <- qchisq((1:nrow(data)-1/2)/nrow(data), df=ncol(data)),
+       sd <-  sort(dis), xlab=expression(paste(chi^2, " Quantile")),
+       ylab="Ordered Distances", main=main,
+       pch=19,cex.lab=1,cex.axis=1,cex=1, col=col)
+  
+  #adding "optimal normally distribtion" line
+  abline(a=0,b=1,col= "red",lwd=2)
+  
+  #in case of outliers mark them
+  if(outl) {
+    out =  which(rank(abs(qc-sd), ties= "random") > nrow(data)-3)
+    print(out)
+    #show up rownumbers instead of rownames
+    text(qc[out], sd[out]-1.5, 
+         which(attributes(data)$row.names == names(out)),cex=1,col="blue")
+  }
+  
+}
+
+#apply the chi-sq-plot to the whole dataset
+#the datapoints do not seem to stick to the optimal line, so it is to assume that the data
+#is not multivariate normal distributed
+normal_multi.custom(bfeats, main="Test for multivariate normal distribution")
+
+#A multivariate Shapiro-Wilk-Test does underline this assumption
+#pvalue = 0 -> hypothesis of norm. dis. has to be rejected
+require(mvShapiroTest)
+mvShapiro.Test(as.matrix(bfeats))$p.value
+
+#analysis of the feature groups for multivariate normal distribution
+#cm_angle does differ a lot
+normal_multi.custom(bfeats.cm_angle, main="Test for multivariate normal distribution (cm_angle)")
+#cm_conv has outliers at the end
+normal_multi.custom(bfeats.cm_conv, main="Test for multivariate normal distribution (cm_conv)")
+#cm_grad also has outliers
+normal_multi.custom(bfeats.cm_grad, main="Test for multivariate normal distribution (cm_grad)")
+#differs for higher distances
+normal_multi.custom(bfeats.ela_conv, main="Test for multivariate normal distribution (ela_conv)")
+#differs for higher values
+normal_multi.custom(bfeats.ela_curv, main="Test for multivariate normal distribution (ela_curv)")
+#ela_local also differs for higher distances
+normal_multi.custom(bfeats.ela_local, main="Test for multivariate normal distribution (ela_local)")
+
+#SW-Test pvalues for feature group multivariate
+#underline rejection of hypothesises
+mvShapiro.Test(as.matrix(bfeats.cm_angle))$p.value  #2.1185e-227
+mvShapiro.Test(as.matrix(bfeats.cm_conv))$p.value   #8.9253e-132
+mvShapiro.Test(as.matrix(bfeats.cm_grad))$p.value   #6.3225e-115
+mvShapiro.Test(as.matrix(bfeats.ela_conv))$p.value  #1.7269e-151
+mvShapiro.Test(as.matrix(bfeats.ela_curv))$p.value  #0
+
+#as stated above in the observation about better looking at subsets of the whole dataset
+#because of the repl and the repitions with different numbers of blocks, we have to pay attention
+#to this also when looking for multivariate normality:
+
+#Example of subset block=3 and repl=3
+#it does yield another more detailed look onto the chi-sq-plot
+normal_multi.custom(bfeats[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution")
+#mvShapiro.Test does not work because in subset there are too less observation in relation to dimensions
+
+#analyizing subset feature groups for multinormal distr
+#when looking at the iid subset the datapoints are closer to optimal line
+#-> closer to multivariate normal distribution
+normal_multi.custom(bfeats.cm_angle[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (cm_angle)")
+normal_multi.custom(bfeats.cm_conv[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (cm_conv)")
+normal_multi.custom(bfeats.cm_grad[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (cm_grad)")
+normal_multi.custom(bfeats.ela_conv[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (ela_conv)")
+normal_multi.custom(bfeats.ela_curv[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (ela_curv)")
+normal_multi.custom(bfeats.ela_local[which(metadata[,1]==3 & metadata[,6]==3),], main="Test for multivariate normal distribution (ela_local)")
+
+#also pvalues of SW-Tests are getting much higher, but still far from not rejecting hypothesises
+mvShapiro.Test(as.matrix(bfeats.cm_angle[which(metadata[,1]==3 & metadata[,6]==3),]))$p.value  #4.0837e-08
+mvShapiro.Test(as.matrix(bfeats.cm_conv[which(metadata[,1]==3 & metadata[,6]==3),]))$p.value  #3.3650e-22
+mvShapiro.Test(as.matrix(bfeats.cm_grad[which(metadata[,1]==3 & metadata[,6]==3),]))$p.value  #1.2608e-24
+mvShapiro.Test(as.matrix(bfeats.ela_conv[which(metadata[,1]==3 & metadata[,6]==3),]))$p.value  #1.0563e-20
+mvShapiro.Test(as.matrix(bfeats.ela_curv[which(metadata[,1]==3 & metadata[,6]==3),]))$p.value  #7.8178e-121
 
 #-----------------------------------------------------------------------------------------------------------
 
