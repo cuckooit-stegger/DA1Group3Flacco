@@ -1,7 +1,7 @@
 # Group 03
 # Team Members
-# git test
-#
+# Christian Siemen (394724)
+# 
 #
 #
 
@@ -81,7 +81,7 @@ panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) {
   text(0.5, 0.5, paste(txt," / ", txt2,sep=""), cex = cex.cor,col="blue")
 }
 
-#function to draw a scatterplot with custom upper and diagonal panels
+#function to draw a scatterplot with custom upper and diagonal panels and with legend
 pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
   #use full window for legend
   par(xpd=TRUE)
@@ -118,15 +118,7 @@ pairs.cor <- function(x) {
   sum.corr / (length(x)*(length(x) - 1))
 }
 
-### Lucas:  which scatterplots do make sense? Scatterplots with feature groups won't tell us anything 
-###         important I would guess. Maybe scatterplots between the several mean columns of the feature
-###         groups? Or include some of the setup features to show which setup feature influences which 
-###         other feature?
-### Christian: I included scatterplot for displaying the within feature group corr and the between feature group
-####           corr. Thus we can see that, how expected within them it is high and between low. But we also see
-###            that there are some dependencies between feat groups
-###           Maybe we can also include some measure on the average corr within a scatterplot
-
+#csiemen
 #correlation within the feature-groups is relatively high. This retrieves that it makes sense in further steps to
 #reduce dimensionality
 pairs.custom(bfeats.cm_angle, m="Correlation within Feature Group cm_angle")
@@ -169,16 +161,23 @@ pairs.cor(bfeats.ela_local) #0.2519
 #examine the correlations between different feature groups by scatterplots
 #for each feature group the first PC is included in the scatterplot to cover as much variance as
 #possible by one datacolumn in the scatterplot
-prcomp_feat_groups = data.frame(
+princomp_feat_groups = data.frame(
 bfeats.topology,
-prcomp(bfeats.cm_angle, scale=TRUE)$x[,1],
-prcomp(bfeats.cm_conv, scale=TRUE)$x[,1],
-prcomp(bfeats.cm_grad, scale=TRUE)$x[,1],
-prcomp(bfeats.ela_conv, scale=TRUE)$x[,1],
-prcomp(bfeats.ela_curv, scale=TRUE)$x[,1],
-prcomp(bfeats.ela_local, scale=TRUE)$x[,1])
+princomp(bfeats.cm_angle, corr=TRUE, scores=TRUE)$scores[,1],
+princomp(bfeats.cm_conv, corr=TRUE, scores=TRUE)$scores[,1],
+princomp(bfeats.cm_grad, corr=TRUE, scores=TRUE)$scores[,1],
+princomp(bfeats.ela_conv, corr=TRUE, scores=TRUE)$scores[,1],
+princomp(bfeats.ela_curv, corr=TRUE, scores=TRUE)$scores[,1],
+princomp(bfeats.ela_local, corr=TRUE, scores=TRUE)$scores[,1])
+#check the amount of variance covered by first PC for each group
+summary(princomp(bfeats.cm_angle, corr=TRUE, scores=TRUE))  #93.30%
+summary(princomp(bfeats.cm_conv, corr=TRUE, scores=TRUE))  #73.38%
+summary(princomp(bfeats.cm_grad, corr=TRUE, scores=TRUE))  #95.55%
+summary(princomp(bfeats.ela_conv, corr=TRUE, scores=TRUE))  #99.99%
+summary(princomp(bfeats.ela_curv, corr=TRUE, scores=TRUE))  #60.06%
+summary(princomp(bfeats.ela_local, corr=TRUE, scores=TRUE))  #99.80%
 #column names
-colnames(prcomp_feat_groups) <- c("topology", "cm_angle", "cm_conv", "cm_curv", "ela_conv", "ela_curv", "ela_local")
+colnames(princomp_feat_groups) <- c("topology", "cm_angle", "cm_conv", "cm_curv", "ela_conv", "ela_curv", "ela_local")
 
 #view scatterplot
 #it can be seen that most of the feature_groups have low correlation between each other
@@ -188,15 +187,16 @@ colnames(prcomp_feat_groups) <- c("topology", "cm_angle", "cm_conv", "cm_curv", 
 #cm_angle <> cm_curv
 #cm_conv <> ela_conv
 #ela_curv <> ela_local
-pairs.custom(prcomp_feat_groups, m="Correlation between Feature Groups")
-pairs.cor(prcomp_feat_groups)   #0.4809  correlation of cerrtain groups drives overall correlation
+pairs.custom(princomp_feat_groups, m="Correlation between Feature Groups")
+pairs.cor(princomp_feat_groups)   #0.3365  correlation of cerrtain groups drives overall correlation
 
 #The blocks argument of the metadata has some effect on the CM-features
-pairs.custom(prcomp_feat_groups[2:4], m="Correlation between Feature Groups", color=colors[metadata[,1]],
+pairs.custom(princomp_feat_groups[2:4], m="Correlation between Feature Groups", color=colors[metadata[,1]],
              legend.title="Number of blocks", legend.text=c("3 blocks", "5 blocks", "7 blocks"), 
              legend.col = colors[c(3,5,7)])
 #number of peaks has no significant influence; prob.seed and repl neither.
 
+#csiemen
 #scatterplot3d
 #include package
 require(scatterplot3d) 
@@ -214,38 +214,76 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   layout(matrix(1, ncol=1))
 }
 
-#TODO some in feature group scatterplot3d may be useful
+
+#analyizing the distance to best, worst and the ratio of best and worst in a 3d scatterplot results
+#in showing up three distinct clusters, consisting of a different number of blocks
+#explanation: cells in a setting with smaller number of blocks are larger, distances therefore larger too
+scatterplot3d.custom(bfeats.cm_angle[,1], bfeats.cm_angle[,3], bfeats.cm_angle[,7],
+                     angle=35, main="3D Scatterplot on features within cm_angle", xlab="dist_ctr2best.mean", ylab="dist_ctr2worst.mean", 
+                     zlab="y_ratio_best2worst.mean", col=colors[metadata[,1]], legend.title="Number of blocks", 
+                     legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
+
+#also between feature groups in CM there are some dependencies
+scatterplot3d.custom(bfeats.cm_angle[,7], bfeats.cm_conv[,4], bfeats.cm_grad[,1],
+                     angle=35, main="3D Scatterplot on features within CM", xlab="y_ratio_best2worst.mean", ylab="concave.soft", 
+                     zlab="cm_grad.mean", col=colors[metadata[,1]], legend.title="Number of blocks", 
+                     legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
+
+#runtimes within ELA feature are increasing commonly (depending on number of peaks)
+scatterplot3d.custom(bfeats.ela_conv[,4], bfeats.ela_curv[,23], bfeats.ela_local[,14],
+                     angle=35, main="3D Scatterplot on runtime features within ela features", xlab="ela_conv.runtime", ylab="ela_curv.runtime", 
+                     zlab="ela_local.runtime",col=colors[metadata[,4]/20], legend.col=colors[1:10],
+                     legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
+                     "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
+
+#dependencies within ELA_curv featureset
+scatterplot3d.custom(bfeats.ela_curv[,3], bfeats.ela_curv[,10], bfeats.ela_curv[,17],
+                     angle=35, main="3D Scatterplot on features within ela_curv features", xlab="grad_norm.mean", ylab="grad_scale.mean", 
+                     zlab="hessian_cond.mean", col=colors[bfeats.topology], legend.title="Topology", 
+                     legend.text=c("funnel", "random"), legend.col=colors[1:2])
+
+#also between ELA features there are some dependencies. clusters dependent on topology of function
+scatterplot3d.custom(bfeats.ela_conv[,1], bfeats.ela_curv[,3], bfeats.ela_local[,3],
+                     angle=35, main="3D Scatterplot between features within ela features (by topology)", xlab="ela_conv.runtime", ylab="ela_curv.runtime", 
+                     zlab="ela_local.runtime", col=colors[bfeats.topology], legend.title="Topology", 
+                     legend.text=c("funnel", "random"), legend.col=colors[1:2])
+
 
 #scatterplots for displaying different feature groups against each other
 #analysis of ELA features in scatterplot
-scatterplot3d.custom(prcomp_feat_groups$ela_conv, prcomp_feat_groups$ela_curv, prcomp_feat_groups$ela_local,
+scatterplot3d.custom(princomp_feat_groups$ela_conv, princomp_feat_groups$ela_curv, princomp_feat_groups$ela_local,
               angle=35, main="3D Scatterplot on ELA-features", xlab="ela_conv",
               ylab="ela_curv", zlab="ela_local",col=colors[1], legend.title="no", legend.col=NULL, legend.text=NULL)
+
 #although num of blocks and repl dont have influence on distributrion of ela features,
-#the generators seed seems to produce clusters overlying eacch other (small cluster in seed = 5)
-scatterplot3d.custom(prcomp_feat_groups$ela_conv, prcomp_feat_groups$ela_curv, prcomp_feat_groups$ela_local,
+#the generators seed seems to produce clusters overlying eacch other (small clusters in seed = 4)
+scatterplot3d.custom(princomp_feat_groups$ela_conv, princomp_feat_groups$ela_curv, princomp_feat_groups$ela_local,
                      angle=35, main="3D Scatterplot on ELA-features (prob.seed)", xlab="ela_conv",
                      ylab="ela_curv", zlab="ela_local",col=colors[metadata[,5]], legend.col=colors[1:5],
                      legend.title = "Prob.seed", legend.text = c("1", "2", "3", "4", "5"))
+
 #deeper analyis wrt to number of peaks as add information (apparently influence on ELA-features)
-#one "outlier" cluster can be seen at number of peaks = 20
-scatterplot3d.custom(prcomp_feat_groups$ela_conv, prcomp_feat_groups$ela_curv, prcomp_feat_groups$ela_local,
+#outlier clusters can be seen at number of peaks = 20
+scatterplot3d.custom(princomp_feat_groups$ela_conv, princomp_feat_groups$ela_curv, princomp_feat_groups$ela_local,
                      angle=35, main="3D Scatterplot on ELA-features (number of peaks)", xlab="ela_conv",
                      ylab="ela_curv", zlab="ela_local",col=colors[metadata[,4]/20], legend.col=colors[1:10],
                      legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
                       "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
+
 #scatterplot for cell mapping feature groups
-scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, prcomp_feat_groups$cm_grad,
-              angle=35, main="3D Scatterplot on CM-features", xlab="cm_angle",
+scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv, princomp_feat_groups$cm_grad,
+              angle=55, main="3D Scatterplot on CM-features", xlab="cm_angle",
               ylab="cm_conv", zlab="cm_grad",col=colors[1], legend.title="no", legend.col=NULL, legend.text=NULL)
+
 #adding the information of how many blocks were created shows up three distinct clusters
-scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, prcomp_feat_groups$cm_grad,
-                  angle=35, main="3D Scatterplot on CM-features (by num of blocks)", xlab="cm_angle",
+scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv, princomp_feat_groups$cm_grad,
+                  angle=55, main="3D Scatterplot on CM-features (by num of blocks)", xlab="cm_angle",
                   ylab="cm_conv", zlab="cm_grad", col=colors[metadata[,1]], legend.title="Number of blocks", 
                   legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
+
 #adding other metadata like repl or seed does not cluster the data likewise, the features do not depend on which 
 #replication or seed is used. Also peaks does not have influence on cm features:
-scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, prcomp_feat_groups$cm_grad,
+scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv, princomp_feat_groups$cm_grad,
                      angle=35, main="3D Scatterplot on CM-features (by num of peaks)", xlab="cm_angle",
                      ylab="cm_conv", zlab="cm_grad", col=colors[metadata[,4]/20], legend.col=colors[1:10],
                      legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
@@ -255,7 +293,7 @@ scatterplot3d.custom(prcomp_feat_groups$cm_angle, prcomp_feat_groups$cm_conv, pr
 
 #mkubicki
 #function:
-#cor.detect: display all correlations between columns in given dataset that have at least value l
+#cor.detect: display all correlations (pearson) between columns in given dataset that have at least value l
 #parameters:
 #x: data.frame to inspect
 #l: minimum correlation. display correlation if absolute of cor is >=l
