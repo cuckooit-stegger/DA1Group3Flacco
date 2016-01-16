@@ -217,7 +217,9 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   if(legend.title != "no") {
     legend('center','groups',legend=legend.text, col=legend.col, pch=19, title=legend.title, bty ="n", horiz=TRUE, cex=0.8)
   }
+  #reset normal settings
   layout(matrix(1, ncol=1))
+  par(mar=c(8,5,5,5))
 }
 
 
@@ -342,6 +344,126 @@ cor.detect(bfeats, l=.9)
 
 #1.2 Tests for normality
 
+#CSiemen
+#method for different normality test
+#method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
+normal.custom <- function(x, title, col=colors[1], round=6) {
+  #draw qqplot
+  qqnorm(x, main = title,pch=19,
+         cex.lab=1,cex.main=1,ylab="Sample Quantiles", col=col)
+  #insert "optimal" line
+  qqline(x,lwd=2,col="red")
+  #view histogram and p-value of SW-Test
+  hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
+}
+
+#apply the normality tests to single features of the dataset (in groups of 5 for displaying issues)
+#it can be seen that assuming a significance niveau of 0.01 for each of the features
+#the hypothesis of a normal distribution would be rejected
+layout(matrix(1:10, ncol=5,nrow=2))
+#1-5: p-value close to zero
+mapply(normal.custom, x=bfeats[1:5], title=colnames(bfeats)[1:5])
+#6-10: p-value close to zero
+mapply(normal.custom, x=bfeats[,6:10], title=colnames(bfeats)[6:10])
+#11-15: p-value close to zero
+mapply(normal.custom, x=bfeats[,11:15], title=colnames(bfeats)[11:15])
+#16-20: p-value close to zero
+mapply(normal.custom, x=bfeats[,16:20], title=colnames(bfeats)[16:20])
+#21-25: p-value close to zero
+mapply(normal.custom, x=bfeats[,21:25], title=colnames(bfeats)[21:25])
+#26-30: p-value close to zero
+mapply(normal.custom, x=bfeats[,26:30], title=colnames(bfeats)[26:30])
+#32-35: p-value close to zero, 31 p-value of 0.04% still very low
+mapply(normal.custom, x=bfeats[,31:35], title=colnames(bfeats)[31:35])
+#36,37,39,40: p-value close to zero, 38 p-value of 0.0928% still very low
+mapply(normal.custom, x=bfeats[,36:40], title=colnames(bfeats)[36:40])
+#41-45: p-value close to zero
+mapply(normal.custom, x=bfeats[,41:45], title=colnames(bfeats)[41:45])
+#46-50: p-value close to zero
+mapply(normal.custom, x=bfeats[,46:50], title=colnames(bfeats)[46:50])
+#51-55: p-value close to zero
+mapply(normal.custom, x=bfeats[,51:55], title=colnames(bfeats)[51:55])
+#56-59: p-value close to zero
+mapply(normal.custom, x=bfeats[,56:59], title=colnames(bfeats)[56:59])
+
+#deeper analysis of p-values of SW-Tests for single features
+#all of the tests are rejected with sig niv of 0.01
+#mean: 0.02261%
+bfeats.sw_pvalue = sapply(bfeats[,1:59], function(x) {shapiro.test(as.numeric(x))$p.value})
+summary(bfeats.sw_pvalue)
+which(bfeats.sw_pvalue > 0.01)
+
+#also whan applying the tests to the PC of the feature groups (see 1.1 Visualization)
+#the hypothesis of normal distribution must be rejected for each
+#nevertheless the CM seem to be closer to normal distributrion by looking on the graphs
+layout(matrix(1:6, ncol=3, nrow=2))
+mapply(normal.custom, x=princomp_feat_groups[,2:4], title=colnames(princomp_feat_groups)[2:4])
+mapply(normal.custom, x=princomp_feat_groups[,5:7], title=colnames(princomp_feat_groups)[5:7])
+
+#CSiemen
+#apparently we cannot hold the assumption that the features in the dataset are normally distributed
+#when looking at the whole dataset.
+#Indeed there are two reasons for not looking on the whole dataset when testing for normality:
+#1. every setting of the metadata has been executed 10 times (see column repl in metadata)
+#   since most features are not stochastic ten rows will have the same value
+#   the assumption of the problem instances being iid does not hold
+#2. every problem instance is executed 3 times with different blocks setting
+#   however for most features they retrieve each time the same value
+#Therefore when testing normality (for assuming the instances being iid) the subgroups should be analyzed separately
+#This means analyzing all data from ONE BLOCK SETTING and ONE REPITION as one subgroups.
+#This way of doing yields 30 subgroups in total. And indeed the data seems to be closer to normally distribution:
+
+#Analyze the subset(blocks = 3, repl = 1) of the dataset wrt to normality
+#it can be seen that most of the features are closer to being normally distributed as the SW-test and the graphs show
+layout(matrix(1:10, ncol=5,nrow=2))
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),1:5], title=colnames(bfeats)[1:5])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),6:10], title=colnames(bfeats)[6:10])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),11:15], title=colnames(bfeats)[11:15])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),16:20], title=colnames(bfeats)[16:20])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),21:25], title=colnames(bfeats)[21:25])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),26:30], title=colnames(bfeats)[26:30])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),31:35], title=colnames(bfeats)[31:35])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),36:40], title=colnames(bfeats)[36:40])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),41:45], title=colnames(bfeats)[41:45])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),46:49], title=colnames(bfeats)[46:49])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),51:55], title=colnames(bfeats)[51:55])
+mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),56:59], title=colnames(bfeats)[56:59])
+
+#also when taking a closer look at the average SW-test pvalues, they do increase significantly 
+#contrary to looking at the whole dataset
+#mean of all 30 subgroups is calculated
+#mean of new SW-Test pvalue:3.86% (0.02261% before)
+temp_mat = matrix(rep(1, 56), nrow=56)
+for(i in 1:3) {
+  for(j in 1:10) {
+    #appending pvalues of the next subset to matrix with pvalues of all subsets
+    temp_mat = cbind(temp_mat, sapply(bfeats[which(metadata[,6]==j & metadata[,1]==1+2*i),c(1:47,51:59)], 
+                                      function(x) {shapiro.test(as.numeric(x))$p.value}))
+  }
+}
+#calculating average pvalues for each feature over all 30 subsets
+bfeats.sw_pvalue.subgroups = rowMeans(temp_mat[,-1])
+summary(bfeats.sw_pvalue.s1)
+#assuming a significance niveau of 0.01 the normal distribution of following features cannot be rejected any longer:
+#cm_angle.dist_ctr2best.sd    1.10%   
+#cm_angle.angle.mean          1.12%
+#cm_angle.angle.sd            4.44%
+#ela_curv.grad_scale.lq       99.32%
+#ela_curv.grad_scale.med      12.36%
+#ela_curv.hessian_cond.lq     89.07%
+#ela_curv.hessian_cond.uq     8.32%
+#ela_curv.costs_fun_evals     7.15%
+which(bfeats.sw_pvalue.s1 > 0.01)
+bfeats.sw_pvalue.s1[which(bfeats.sw_pvalue.s1 > 0.01)]
+
+#also when looking onto the PC of the feature groups the pvalues do increase when looking on the subset separately
+#example for repl=1 and blocks=3:
+layout(matrix(1:6, ncol=3, nrow=2))
+mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1]==3),2:4], title=colnames(princomp_feat_groups)[2:4])
+mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1]==3),5:7], title=colnames(princomp_feat_groups)[5:7])
+
+
+#Tests for multivariate normal distribution:
 
 
 #-----------------------------------------------------------------------------------------------------------
