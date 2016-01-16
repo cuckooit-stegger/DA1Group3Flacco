@@ -124,7 +124,7 @@ pairs.cor <- function(x) {
   sum.corr / (length(x)*(length(x) - 1))
 }
 
-#csiemen
+#
 #correlation within the feature-groups is relatively high. This retrieves that it makes sense in further steps to
 #reduce dimensionality
 pairs.custom(bfeats.cm_angle, m="Correlation within Feature Group cm_angle")
@@ -202,7 +202,7 @@ pairs.custom(princomp_feat_groups[2:4], m="Correlation between Feature Groups", 
              legend.col = colors[c(3,5,7)])
 #number of peaks has no significant influence; prob.seed and repl neither.
 
-#csiemen
+#
 #scatterplot3d
 #include package
 require(scatterplot3d) 
@@ -344,7 +344,7 @@ cor.detect(bfeats, l=.9)
 
 #1.2 Tests for normality
 
-#CSiemen
+#
 #method for different normality test
 #method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
 normal.custom <- function(x, title, col=colors[1], round=6) {
@@ -400,7 +400,7 @@ layout(matrix(1:6, ncol=3, nrow=2))
 mapply(normal.custom, x=princomp_feat_groups[,2:4], title=colnames(princomp_feat_groups)[2:4])
 mapply(normal.custom, x=princomp_feat_groups[,5:7], title=colnames(princomp_feat_groups)[5:7])
 
-#CSiemen
+#
 #OBSERVATION
 #apparently we cannot hold the assumption that the features in the dataset are normally distributed
 #when looking at the whole dataset.
@@ -561,7 +561,7 @@ mvShapiro.Test(as.matrix(bfeats.ela_curv[which(metadata[,1]==3 & metadata[,6]==3
 #features as well as not a multivariate distribution as a whole (even the subset not that much), we will apply
 #box cox transformations in the following for adjusting it
 
-#CSiemen
+#
 #Box Cox Transformation
 require(AID)
 
@@ -782,7 +782,9 @@ out = which(abs(bfeats.scale_max) > 5)
 #exclude outliers
 bfeats2 = bfeats[-out,]
 
-#TODO scatterplots for 2-dimensional outliers
+#2-dimensional outliers
+#since there is a large number of dimension we will basically examine the outliers
+#on scatterplots within the feature groups
 #i guess can be reused from 1.1
 
 #TODO multidimensional outliers
