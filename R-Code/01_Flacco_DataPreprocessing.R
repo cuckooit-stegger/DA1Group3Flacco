@@ -362,7 +362,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
 #the hypothesis of a normal distribution would be rejected
 layout(matrix(1:10, ncol=5,nrow=2))
 #1-5: p-value close to zero
-mapply(normal.custom, x=bfeats[1:5], title=colnames(bfeats)[1:5])
+mapply(normal.custom, x=bfeats[,1:5], title=colnames(bfeats)[1:5])
 #6-10: p-value close to zero
 mapply(normal.custom, x=bfeats[,6:10], title=colnames(bfeats)[6:10])
 #11-15: p-value close to zero
@@ -474,8 +474,6 @@ normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
   #calculating distances in the multidimensional room
   dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
   
-  #resetting layout
-  layout(matrix(1:1, ncol=1, nrow=1))
   #plotting x^2 plot with datpoints
   #df = number of cols in data
   plot(qc <- qchisq((1:nrow(data)-1/2)/nrow(data), df=ncol(data)),
@@ -559,10 +557,124 @@ mvShapiro.Test(as.matrix(bfeats.ela_curv[which(metadata[,1]==3 & metadata[,6]==3
 
 #1.3 Transformation to Normality
 
+#Since we know from the previous section that the data does not represent a normal distribution in the single
+#features as well as not a multivariate distribution as a whole (even the subset not that much), we will apply
+#box cox transformations in the following for adjusting it
+
+#CSiemen
+#Box Cox Transformation
+require(AID)
+
+#custom function for applying boxcox transformation to features of a given dataset
+#the columns for which the boxcox shall be applied can be specified
+#because for some features it will not be possible due to computation limits or negative values
+boxcox.custom <- function(data, cols=1:length(data)) {
+  print("new")
+  data[,cols] = 
+    sapply(data[,cols], function(x) {
+    lambda <- boxcoxnc(as.numeric(x), method='sw', plotit=FALSE, lam=seq(-7,7,0.01))$result[[1]]
+    print(lambda)
+    tr <- (x^{lambda}-1)/lambda
+  })
+  data
+}
+
+#transform features to normality by boxcox transformation
+bfeats.boxcox = boxcox.custom(bfeats, c(2:10, 15:19, 21:29, 31:36, 38:43, 45, 47:49, 51, 53:56))
+
+#SW-Test after transformation
+#mean of 1.621% for pvalue (0.02261% before transformation)
+#assuming sign niveau of 0.01 the following cannot be rejected from being norm distr.
+#ela_curv.grad_scale.lq  
+#ela_curv.grad_scale.med   
+#ela_curv.grad_scale.uq 
+#ela_curv.hessian_cond.lq
+bfeats.boxcox.sw_pvalue = sapply(as.data.frame(bfeats.boxcox), function(x) {shapiro.test(as.numeric(x))$p.value})
+summary(bfeats.boxcox.sw_pvalue)
+summary(bfeats.sw_pvalue)
+which(bfeats.boxcox.sw_pvalue > 0.01)
+which(bfeats.sw_pvalue > 0.01)
+
+#function for displaying qqplot and SW pvalue before and after boxcox transformation
+boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], round=6) {
+  #draw qqplot before
+  qqnorm(before_data, main = title ,pch=19,
+         cex.lab=1,cex.main=1,ylab="Sample Quantiles", xlab= paste("SW-Test: ", round(shapiro.test(before_data)$p.value, round)),
+         col=col)
+  #insert "optimal" line
+  qqline(before_data,lwd=2,col="red")
+  #view histogram and p-value of SW-Test
+  ##qqplot after transformation
+  qqnorm(after_data, pch=19, xlab="",
+         cex.lab=1,cex.main=1,ylab="", main= paste("SW-Test: ", round(shapiro.test(after_data)$p.value, 6)),
+         col=col)
+  #insert "optimal" line
+  qqline(after_data,lwd=2,col="red")
+}
+
+#examining qqplot before and after boxcox transformation to dataset:
+#some of the features seem to fit better to the optimal line of normal distribution
+#although for most of the features a normal distribution still has to be rejected
+layout(matrix(1:10,ncol=5))
+mapply(boxcox_view.custom, before_data=bfeats[,1:5], after_data=bfeats.boxcox[,1:5], title=colnames(bfeats)[1:5])
+mapply(boxcox_view.custom, before_data=bfeats[,6:10], after_data=bfeats.boxcox[,6:10], title=colnames(bfeats)[6:10])
+mapply(boxcox_view.custom, before_data=bfeats[,11:15], after_data=bfeats.boxcox[,11:15], title=colnames(bfeats)[11:15])
+mapply(boxcox_view.custom, before_data=bfeats[,16:20], after_data=bfeats.boxcox[,16:20], title=colnames(bfeats)[16:20])
+mapply(boxcox_view.custom, before_data=bfeats[,21:25], after_data=bfeats.boxcox[,21:25], title=colnames(bfeats)[21:25])
+mapply(boxcox_view.custom, before_data=bfeats[,26:30], after_data=bfeats.boxcox[,26:30], title=colnames(bfeats)[26:30])
+#this features really have improved
+mapply(boxcox_view.custom, before_data=bfeats[,31:35], after_data=bfeats.boxcox[,31:35], title=colnames(bfeats)[31:35])
+mapply(boxcox_view.custom, before_data=bfeats[,36:40], after_data=bfeats.boxcox[,36:40], title=colnames(bfeats)[36:40])
+mapply(boxcox_view.custom, before_data=bfeats[,41:45], after_data=bfeats.boxcox[,41:45], title=colnames(bfeats)[41:45])
+mapply(boxcox_view.custom, before_data=bfeats[,46:50], after_data=bfeats.boxcox[,46:50], title=colnames(bfeats)[46:50])
+mapply(boxcox_view.custom, before_data=bfeats[,51:55], after_data=bfeats.boxcox[,51:55], title=colnames(bfeats)[51:55])
+mapply(boxcox_view.custom, before_data=bfeats[,56:59], after_data=bfeats.boxcox[,56:59], title=colnames(bfeats)[56:59])
+
+#multivariate distribution after boxcox:
+#comparison of chi-sq-plots before and after transformation
+#after boxcox points are closer to optimal line (consider scale of y-axis!)
+layout(matrix(1:2, ncol=2, nrow=1))
+normal_multi.custom(bfeats, main="Before Boxcox")
+normal_multi.custom(bfeats.boxcox, main="After Boxcox")
+
+
+#SUBSETS
+#as seen in 1.2 Tests for normality, subsets of whole dataset should be used instead of the whole data for being iid
+#following boxcox is applied to iid subsets of the data
+#afterwards the data is concatenated to one dataset again
+bfeats.boxcox2 = bfeats[1,]
+for(i in 1:3) {
+  for(j in 1:10) {
+    bfeats.boxcox2 = rbind(bfeats.boxcox2, boxcox.custom(bfeats[which(metadata[,1]==1+2*i & metadata[,6]==j),], 
+    c(2:10, 15:19, 21:29, 31:36, 38:43, 45, 47, 51, 53:56)))
+  }
+}
+bfeats.boxcox2 = bfeats.boxcox2[2:nrow(bfeats.boxcox2),]
+#save data because of long computing time
+save(bfeats.boxcox,bfeats.boxcox2, file="../3-boxcox.RData")
+
+#examining the SW-Test for this boxcox transformation data
+#apparently apply the boxcox to the subsets does not retrieve a good result when looking at the SW-test for the
+#whole dataset
+#mean 1.031e-05
+bfeats.boxcox2.sw_pvalue = sapply(as.data.frame(bfeats.boxcox), function(x) {shapiro.test(as.numeric(x))$p.value})
+summary(bfeats.boxcox2.sw_pvalue)
+which(bfeats.boxcox2.sw_pvalue > 0.01)
+
+#examine features before and after boxcox transformation
+#also the look upon qqplots before and after boxcox show that applying boxcox separately to subgroups is no good idea
+layout(matrix(1:10,ncol=5))
+mapply(boxcox_view.custom, before_data=bfeats[,1:5], after_data=bfeats.boxcox2[,1:5], title=colnames(bfeats)[1:5])
+mapply(boxcox_view.custom, before_data=bfeats[,6:10], after_data=bfeats.boxcox2[,6:10], title=colnames(bfeats)[6:10])
+
+#therefore we go on by using the boxcox data from applying to the whole data set for outlier detection
+bfeats.boxcox
 
 #-----------------------------------------------------------------------------------------------------------
 
 #1.4 Outlier Detection
+
+
 
 #-----------------------------------------------------------------------------------------------------------
 
