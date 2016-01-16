@@ -674,7 +674,119 @@ bfeats.boxcox
 
 #1.4 Outlier Detection
 
+#one dimensional outliers:
 
+#scale data
+bfeats.scale = apply(bfeats, 2, scale)
+bfeats.cm_angle.scale = apply(bfeats.cm_angle, 2, scale)
+bfeats.cm_conv.scale = apply(bfeats.cm_conv, 2, scale)
+bfeats.cm_grad.scale = apply(bfeats.cm_grad, 2, scale)
+bfeats.ela_conv.scale = apply(bfeats.ela_conv, 2, scale)
+bfeats.ela_curv.scale = apply(bfeats.ela_curv, 2, scale)
+bfeats.ela_local.scale = apply(bfeats.ela_local, 2, scale)
+#get max value within feature groups
+bfeats.cm_angle.scale_max = apply(bfeats.cm_angle.scale, 1, max)
+bfeats.cm_conv.scale_max = apply(bfeats.cm_conv.scale, 1, max)
+bfeats.cm_grad.scale_max = apply(bfeats.cm_grad.scale, 1, max)
+bfeats.ela_conv.scale_max = apply(bfeats.ela_conv.scale, 1, max)
+bfeats.ela_curv.scale_max = apply(bfeats.ela_curv.scale, 1, max)
+bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
+
+#custom function to plot dotplots of the different feature sets
+#therefore max value of each problem instance of all features within feature group is plotted
+#for identifying outliers visually
+#one displaying one repl (see metadata), because values are often equal
+dotplot.custom <- function(x, title) {
+  stripchart(x,method="stack",pch=1,main=title)
+}
+#cm_angle
+#2 outliers can be easily identified -> 561, 581 
+dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle")
+stripchart(bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 4 & metadata[,6] ==1)], col="red", cex=3, add=TRUE, pch=1)
+#cm_conv
+#no real outliers can be seen
+dotplot.custom(bfeats.cm_conv.scale_max[which(metadata[,6]==1)], "Dotplot cm_conv")
+#cm_grad
+#2 outliers at the right end -> 141, 301
+dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad")
+stripchart(bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 4 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+#ela_conv
+#several ooutliers at the right -> 621,661, 1621, 2621, 2661
+dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv")
+stripchart(bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+#ela_curv
+#two outliers at the right -> 2571 2621
+dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv")
+stripchart(bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 7 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+#ela_local
+#three outliers at the right -> 561, 571, 2561
+dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local")
+stripchart(bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 7 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+
+
+#visualization by means of boxplots
+#cm_angle
+#no outliers can be seen
+layout(matrix(1:1, ncol=1))
+boxplot(bfeats.cm_angle.scale[,1:9], range=4, outline=TRUE, names=c(1:9), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of cm_angle Features", col=colors[1])
+#cm_conv
+#one outlier can be seen in feat 1
+layout(matrix(1:1, ncol=1))
+boxplot(bfeats.cm_conv.scale[,1:5], range=4, outline=TRUE, names=c(1:5), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of cm_conv Features", col=colors[1])
+#cm_grad
+#5 outliers in feat 3
+layout(matrix(1:1, ncol=1))
+boxplot(bfeats.cm_grad.scale[,1:3], range=4, outline=TRUE, names=c(1:3), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of cm_grad Features", col=colors[1])
+#ela_conv
+#several outliers in feat 4
+layout(matrix(1:1, ncol=1))
+boxplot(bfeats.ela_conv.scale[,1:4], range=4, outline=TRUE, names=c(1:4), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of ela_conv Features", col=colors[1])
+#ela_curv
+#1 outlier in feat 12, 2 outliers in feat 23,
+#several outliers in features 1, 8, 10, 13, 14, 15, 17, 20, 21
+layout(matrix(1:2, ncol=2))
+boxplot(bfeats.ela_curv.scale[,1:12], range=4, outline=TRUE, names=c(1:12), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
+boxplot(bfeats.ela_curv.scale[,13:23], range=4, outline=TRUE, names=c(13:23), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
+#ela_local
+#1 outlier in feat 5, several in feats 1, 3, 4, 11, 12, 14
+layout(matrix(1:2, ncol=2))
+boxplot(bfeats.ela_local.scale[,1:7], range=4, outline=TRUE, names=c(1:7), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
+boxplot(bfeats.ela_local.scale[,8:14], range=4, outline=TRUE, names=c(8:14), ylab="Index of Feature", 
+        horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
+
+
+#identify maximum sigma-value per row /problem instance
+bfeats.scale_max = apply(bfeats.scale, 1, max)
+#identify those > 5 sigma
+#we decided to use 5 sigma instead of 3.5 sigma in the lecture due to the large number of rows
+out = which(abs(bfeats.scale_max) > 5)
+
+#thus there are 170 outliers identified which represent an outlier in at least one of the features from
+#an one dimensional perspective
+#1D outliers:
+#28  102  145  191  194  195  196  207  227  240  245  249  278  279  308  325  451  456  458  476  502  505  507
+#  508  513  514  517  518  519  532  561  562  563  564  565  566  567  568  569  570  571  572  573  574  575  576
+#  577  578  579  580  625  629  653  687  691  705  774  830  854  908  924 1034 1111 1197 1200 1236 1275 1309 1397
+# 1406 1407 1432 1452 1455 1456 1459 1501 1502 1505 1506 1508 1511 1513 1514 1516 1517 1518 1519 1531 1538 1540 1553
+# 1561 1562 1563 1564 1565 1566 1567 1568 1569 1570 1572 1573 1574 1575 1576 1577 1578 1579 1580 1593 1602 1624 1629
+# 1693 1697 1698 1699 1754 1852 1937 1959 1975 2032 2038 2171 2172 2216 2238 2280 2296 2331 2439 2451 2452 2498 2501
+# 2504 2505 2506 2507 2510 2512 2513 2514 2531 2539 2561 2562 2563 2564 2565 2566 2567 2568 2569 2570 2571 2572 2573
+# 2574 2575 2576 2577 2578 2579 2580 2619 2621 2628 2668 2691 2695 2697 2778 2779 2794 2816
+#exclude outliers
+bfeats2 = bfeats[-out,]
+
+#TODO scatterplots for 2-dimensional outliers
+#i guess can be reused from 1.1
+
+#TODO multidimensional outliers
+#chi-sq-plot and distance calculation
 
 #-----------------------------------------------------------------------------------------------------------
 
