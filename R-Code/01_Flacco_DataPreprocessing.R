@@ -13,9 +13,10 @@
 #1.1 Flacco-specific preprocessing
 #Special Preprocessing techniques for the special needs of the flacco dataset
 
-#load dataset
+#load dataset and inspect
 load("../3-flacco1.RData")
 str(feats)
+summary(feats)
 
 #exclude the technical features at the beginning of the dataset (such as repl or seed) -> first 7 features
 #these features are input parameter to the dataset generator and thus not subject to most of further analysis
@@ -45,6 +46,11 @@ bfeats.cm_grad = bfeats[,seq(16,18)]
 bfeats.ela_conv = bfeats[,seq(19,22)]
 bfeats.ela_curv = bfeats[,seq(23,45)]
 bfeats.ela_local= bfeats[,seq(46,59)]
+
+#inspect after pre-preprocessing
+str(bfeats)
+summary(bfeats)
+#no NaN are in the dataset, no columns with var = 0 left
 
 # colors for the functions
 colors = c('#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12', '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d', '#666666', '#FF0000', '#00FF00', '#0000FF', '#FFFF00')
@@ -290,7 +296,6 @@ scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv
                      "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
 
 
-
 #mkubicki
 #function:
 #cor.detect: display all correlations (pearson) between columns in given dataset that have at least value l
@@ -335,19 +340,18 @@ cor.detect(bfeats, l=.9)
 
 #-----------------------------------------------------------------------------------------------------------
 
-#1.2 Outlier Detection
+#1.2 Tests for normality
 
-
-#-----------------------------------------------------------------------------------------------------------
-
-#1.3 Tests for normality
 
 
 #-----------------------------------------------------------------------------------------------------------
 
-#1.4 Transformation to Normality
+#1.3 Transformation to Normality
 
 
 #-----------------------------------------------------------------------------------------------------------
 
+#1.4 Outlier Detection
+
+#-----------------------------------------------------------------------------------------------------------
 
