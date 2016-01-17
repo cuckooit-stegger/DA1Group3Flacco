@@ -677,13 +677,13 @@ bfeats.boxcox
 #one dimensional outliers:
 
 #scale data
-bfeats.scale = apply(bfeats, 2, scale)
-bfeats.cm_angle.scale = apply(bfeats.cm_angle, 2, scale)
-bfeats.cm_conv.scale = apply(bfeats.cm_conv, 2, scale)
-bfeats.cm_grad.scale = apply(bfeats.cm_grad, 2, scale)
-bfeats.ela_conv.scale = apply(bfeats.ela_conv, 2, scale)
-bfeats.ela_curv.scale = apply(bfeats.ela_curv, 2, scale)
-bfeats.ela_local.scale = apply(bfeats.ela_local, 2, scale)
+bfeats.scale = apply(bfeats.boxcox, 2, scale)
+bfeats.cm_angle.scale = as.data.frame(apply(bfeats.boxcox[,2:10], 2, scale))
+bfeats.cm_conv.scale = as.data.frame(apply(bfeats.boxcox[,11:15], 2, scale))
+bfeats.cm_grad.scale = as.data.frame(apply(bfeats.boxcox[,16:18], 2, scale))
+bfeats.ela_conv.scale = as.data.frame(apply(bfeats.boxcox[,19:22], 2, scale))
+bfeats.ela_curv.scale = as.data.frame(apply(bfeats.boxcox[,23:45], 2, scale))
+bfeats.ela_local.scale = as.data.frame(apply(bfeats.boxcox[,46:59], 2, scale))
 #get max value within feature groups
 bfeats.cm_angle.scale_max = apply(bfeats.cm_angle.scale, 1, max)
 bfeats.cm_conv.scale_max = apply(bfeats.cm_conv.scale, 1, max)
@@ -695,33 +695,34 @@ bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
 #custom function to plot dotplots of the different feature sets
 #therefore max value of each problem instance of all features within feature group is plotted
 #for identifying outliers visually
-#one displaying one repl (see metadata), because values are often equal
+#one displaying one repl (see metadata), because values are often equal, therefore only 1/10 of outliers identified
+#by number
 dotplot.custom <- function(x, title) {
   stripchart(x,method="stack",pch=1,main=title)
 }
 #cm_angle
-#2 outliers can be easily identified -> 561, 581 
+#2 outliers can be easily identified -> 111, 851
 dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle")
-stripchart(bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 4 & metadata[,6] ==1)], col="red", cex=3, add=TRUE, pch=1)
+stripchart(bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 3 & metadata[,6] ==1)], col="red", cex=3, add=TRUE, pch=1)
 #cm_conv
 #no real outliers can be seen
 dotplot.custom(bfeats.cm_conv.scale_max[which(metadata[,6]==1)], "Dotplot cm_conv")
 #cm_grad
-#2 outliers at the right end -> 141, 301
+#2 outliers at the right end -> 581
 dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad")
-stripchart(bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 4 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+stripchart(bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 3 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
 #ela_conv
-#several ooutliers at the right -> 621,661, 1621, 2621, 2661
+#no outliers
 dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv")
 stripchart(bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
 #ela_curv
-#two outliers at the right -> 2571 2621
+#3 outliers at the right -> 191, 2127, 2331
 dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv")
-stripchart(bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 7 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+stripchart(bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 5 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
 #ela_local
-#three outliers at the right -> 561, 571, 2561
+#5 outliers at the right -> 561, 571, 1561, 2561, 2571
 dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local")
-stripchart(bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 7 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+stripchart(bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 5.5 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
 
 
 #visualization by means of boxplots
@@ -736,25 +737,24 @@ layout(matrix(1:1, ncol=1))
 boxplot(bfeats.cm_conv.scale[,1:5], range=4, outline=TRUE, names=c(1:5), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of cm_conv Features", col=colors[1])
 #cm_grad
-#5 outliers in feat 3
+#no outliers
 layout(matrix(1:1, ncol=1))
 boxplot(bfeats.cm_grad.scale[,1:3], range=4, outline=TRUE, names=c(1:3), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of cm_grad Features", col=colors[1])
 #ela_conv
-#several outliers in feat 4
+#no outliers
 layout(matrix(1:1, ncol=1))
 boxplot(bfeats.ela_conv.scale[,1:4], range=4, outline=TRUE, names=c(1:4), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_conv Features", col=colors[1])
 #ela_curv
-#1 outlier in feat 12, 2 outliers in feat 23,
-#several outliers in features 1, 8, 10, 13, 14, 15, 17, 20, 21
+#3 outliers in feat 8, 3 outliers in feat 15
 layout(matrix(1:2, ncol=2))
 boxplot(bfeats.ela_curv.scale[,1:12], range=4, outline=TRUE, names=c(1:12), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
 boxplot(bfeats.ela_curv.scale[,13:23], range=4, outline=TRUE, names=c(13:23), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
 #ela_local
-#1 outlier in feat 5, several in feats 1, 3, 4, 11, 12, 14
+#1 outlier in feat 5, several in feats 1, 3, 4, 12, 14
 layout(matrix(1:2, ncol=2))
 boxplot(bfeats.ela_local.scale[,1:7], range=4, outline=TRUE, names=c(1:7), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
@@ -763,32 +763,182 @@ boxplot(bfeats.ela_local.scale[,8:14], range=4, outline=TRUE, names=c(8:14), yla
 
 
 #identify maximum sigma-value per row /problem instance
-bfeats.scale_max = apply(bfeats.scale, 1, max)
-#identify those > 5 sigma
-#we decided to use 5 sigma instead of 3.5 sigma in the lecture due to the large number of rows
-out = which(abs(bfeats.scale_max) > 5)
+#ignore feat 12 from ela_local, because as seen by boxplots this feature cannot be normally distributed
+bfeats.scale_max = apply(bfeats.scale[,-57], 1, max)
+#identify those > 4.5 sigma
+#we decided to use 4.5 sigma instead of 3.5 sigma in the lecture due to the large number of rows
+out = which(abs(bfeats.scale_max) > 4.5)
 
-#thus there are 170 outliers identified which represent an outlier in at least one of the features from
+#thus there are 65 outliers identified which represent an outlier in at least one of the features from
 #an one dimensional perspective
 #1D outliers:
-#28  102  145  191  194  195  196  207  227  240  245  249  278  279  308  325  451  456  458  476  502  505  507
-#  508  513  514  517  518  519  532  561  562  563  564  565  566  567  568  569  570  571  572  573  574  575  576
-#  577  578  579  580  625  629  653  687  691  705  774  830  854  908  924 1034 1111 1197 1200 1236 1275 1309 1397
-# 1406 1407 1432 1452 1455 1456 1459 1501 1502 1505 1506 1508 1511 1513 1514 1516 1517 1518 1519 1531 1538 1540 1553
-# 1561 1562 1563 1564 1565 1566 1567 1568 1569 1570 1572 1573 1574 1575 1576 1577 1578 1579 1580 1593 1602 1624 1629
-# 1693 1697 1698 1699 1754 1852 1937 1959 1975 2032 2038 2171 2172 2216 2238 2280 2296 2331 2439 2451 2452 2498 2501
-# 2504 2505 2506 2507 2510 2512 2513 2514 2531 2539 2561 2562 2563 2564 2565 2566 2567 2568 2569 2570 2571 2572 2573
-# 2574 2575 2576 2577 2578 2579 2580 2619 2621 2628 2668 2691 2695 2697 2778 2779 2794 2816
+#28  102  191  194  195  196  207  240  245  249  436  437  476  502  624  628  629  687  774  854 1034 1111 1179 1197 1200 1236 1309
+#1397 1406 1407 1433 1435 1553 1565 1567 1593 1624 1625 1627 1693 1754 1852 1937 1959 1975 2032 2171 2172 2176 2216 2296 2331 2399 2512
+#2566 2569 2619 2621 2622 2624 2625 2628 2778 2779 2794
 #exclude outliers
 bfeats2 = bfeats[-out,]
+bfeats2.cm_angle = bfeats.cm_angle[-out,]
+bfeats2.cm_conv = bfeats.cm_conv[-out,]
+bfeats2.cm_grad = bfeats.cm_grad[-out,]
+bfeats2.ela_conv = bfeats.ela_conv[-out,]
+bfeats2.ela_curv = bfeats.ela_curv[-out,]
+bfeats2.ela_local = bfeats.ela_local[-out,]
 
 #2-dimensional outliers
+
+pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
+  #plot the scatterplots
+  pairs(x, panel = function (x, y, ...) {
+    points(x, y, ...)
+    points(x[outl], y[outl], cex=2, col="red", pch=1)
+    abline(lm(y ~ x), col = "blue") 
+    #include correlation coefficients in upper panel and histograms on diagonal
+  }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
+}
+
+
 #since there is a large number of dimension we will basically examine the outliers
 #on scatterplots within the feature groups
-#i guess can be reused from 1.1
+#cm_angle: no outliers can be directly identified
+pairs.custom(bfeats2.cm_angle, m="Outliers within Feature Group cm_angle")
+#cm_conv: no outliers can be directly identified
+pairs.custom(bfeats2.cm_conv, m="Outliers within Feature Group cm_conv")
+#cm_grad: 2 outliers can be identified: 220 904
+pairs_out.custom(bfeats2.cm_grad, m="Outliers within Feature Group cm_grad", 
+                 outl = which(bfeats2.cm_grad[,3]>0.08))
+#ela_conv: 1 outlier: 2606
+pairs_out.custom(bfeats2.ela_conv, m="Outliers within Feature Group ela_conv", 
+             outl = which(bfeats2.ela_conv[,4]>400))
+#ela_curv: 1 outlier: 2751
+pairs.custom(bfeats2.ela_curv[,seq(1,7)], m="Outlier within Feature Group ela_curv (extract)")
+pairs.custom(bfeats2.ela_curv[,seq(8, 14)], m="Outlier within Feature Group ela_curv (extract)")
+pairs_out.custom(bfeats2.ela_curv[,seq(15, 23)], m="Outlier within Feature Group ela_curv (extract)",
+                 outl = which(bfeats2.ela_curv[,18]>4))
+#ela_local: no outliers can be directly identified
+pairs.custom(bfeats2.ela_local[,seq(1,7)], m="Correlation within Feature Group ela_local (extract)")
+pairs.custom(bfeats2.ela_local[,seq(8,14)], m="Correlation within Feature Group ela_local (extract)")
 
-#TODO multidimensional outliers
+#view scatterplot of corr between features (see 1.1)
+#1 outlier: 2668
+pairs_out.custom(princomp_feat_groups, m="Correlation between Feature Groups",
+                 outl = which(princomp_feat_groups[,5]>400))
+
+
+#Multidimensional outliers
 #chi-sq-plot and distance calculation
 
+#custom function for display x^2 plot for testing multivariate normal distribution
+require(MASS)
+outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
+  cm = colMeans(data)
+  S = cov(data)
+  #calculating distances in the multidimensional room
+  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
+  
+  #plotting x^2 plot with datpoints
+  #df = number of cols in data
+  plot(qc <- qchisq((1:nrow(data)-1/2)/nrow(data), df=ncol(data)),
+       sd <-  sort(dis), xlab=expression(paste(chi^2, " Quantile")),
+       ylab="Ordered Distances", main=main,
+       pch=19,cex.lab=1,cex.axis=1,cex=1, col=col)
+  
+  #in case of outliers mark them
+  if(num_outl > 0) {
+    out =  which(rank(abs(sd), ties= "random") > nrow(data)-num_outl)
+    print(which(attributes(data)$row.names %in% names(out)))
+    #mark outliers
+    text(qc[out], sd[out]-1.5, 
+         which(attributes(data)$row.names %in% names(out)),cex=0.5,col="blue", pos=1)
+    points(qc[out], sd[out], col="red", pch=1, cex=2)
+  }
+  
+}
+
+#identify multidimensional outliers from the whole dataset
+#there are 11 outliers
+#559  560  561  566 1539 1540 1541 1544 2515 2516 2606
+layout(matrix(1, ncol=1))
+outlier_multi.custom(bfeats2, main="Multidimensional outliers", num_outl=11)
+
+#identify outliers when looking at the feature groups
+#outliers are identified from each feature group
+#cm_angle
+#10 outliers: 597 598 599 600 601 602 603 604 605 606
+outlier_multi.custom(bfeats2.cm_angle, main="Multidimensional outliers (cm_angle)", num_outl=10)
+#cm_conv
+#4 outliers: 298 315 811 888
+outlier_multi.custom(bfeats2.cm_conv, main="Multidimensional outliers (cm_conv)", num_outl=4)
+#cm_grad
+#2 outliers: 220 904
+outlier_multi.custom(bfeats2.cm_grad, main="Multidimensional outliers (cm_grad)", num_outl=2)
+#ela_conv
+#1 outlier: 2606
+outlier_multi.custom(bfeats2.ela_conv, main="Multidimensional outliers (ela_conv)", num_outl=1)
+#ela_curv
+#10 outliers: 559  560  561  566 1539 1540 1541 1544 2515 2516
+outlier_multi.custom(bfeats2.ela_curv, main="Multidimensional outliers (ela_curv)", num_outl=10)
+#ela_local
+#7 outliers: 549  554  555 1530 2508 2511 2513
+outlier_multi.custom(bfeats2.ela_local, main="Multidimensional outliers (ela_local)", num_outl=7)
+
+#calculate generalized suared distances
+distances.custom <- function(data) {
+  cm = colMeans(data)
+  S = cov(data)
+  #calculating distances in the multidimensional room
+  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
+}
+
+#calculate distances for whole dataset
+bfeats2.distances = distances.custom(bfeats2)
+#calculate 99.99 % quantile for dataset
+bfeats2.limit = qchisq(0.9999, df=ncol(bfeats2))
+#identify outliers based on limit
+#47 outliers: 
+#356  439  444  446  453  458  470  547  548  549  552  554  555  559  560  561  563 
+#564  566  610  668  676 1222 1420 1423 1424 1530 1531
+#1537 1538 1539 1540 1541 1542 1543 1544 1590 1637 2398 2508 2511 2513 2515 2516 2517 2518 2606 
+out = which(bfeats2.distances > bfeats2.limit)
+
+#identify outliers in feature groups of CM (most are the same as in whole dataset)
+#calculate distances
+bfeats2.distances.cm = distances.custom(bfeats2[,2:18])
+#calculate 99.99 % quantile for dataset
+bfeats2.limit.cm = qchisq(0.9999, df=ncol(bfeats2[,2:18]))
+#identify outliers based on limit
+#45 outliers: 
+#356  439  444  446  453  458  470  547  548  549  552  554  555  559  560  561  
+#563  564  566  610  668  676 1222 1420 1423 1424 1530 1531
+#1537 1538 1539 1540 1541 1542 1543 1544 1590 1637 2398 2508 2511 2513 2515 2516 2517 2518 2606  
+out.cm = which(bfeats2.distances.cm > bfeats2.limit.cm)
+
+#identify outliers in feature groups of ELA (some additional outliers)
+#calculate distances
+bfeats2.distances.ela = distances.custom(bfeats2[,19:59])
+#calculate 99.99 % quantile for dataset
+bfeats2.limit.ela = qchisq(0.9999, df=ncol(bfeats2[,19:59]))
+#identify outliers based on limit
+#91 outliers: 
+#231  280  323  336  360  362  364  366  369  400  402  407  438  440  443  446  454  456  
+#457  459  462  540  541  542  543  544  545  546 
+#547  634  642 1118 1323 1325 1329 1330 1333 1363 1365 1369 1389 1401 1402 1414 1415 
+#1416 1417 1502 1503 1504 1505 1506 1507 1509 1533 1545 
+#1578 1581 1596 1598 1614 2095 2135 2137 2281 2282 2300 2317 2322 2326 2345 2360 
+#2361 2365 2382 2383 2386 2468 2469 2470 2471 2472 2473 2474 
+#2475 2476 2477 2478 2514 2562 2564
+out.ela = which(bfeats2.distances.ela > bfeats2.limit.ela)
+
+#exclude multidimensional outliers
+bfeats3 = bfeats2[-c(out, out.cm, out.ela),]
+bfeats3.cm_angle = bfeats2.cm_angle[-c(out, out.cm, out.ela),]
+bfeats3.cm_conv = bfeats2.cm_conv[-c(out, out.cm, out.ela),]
+bfeats3.cm_grad = bfeats2.cm_grad[-c(out, out.cm, out.ela),]
+bfeats3.ela_conv = bfeats2.ela_conv[-c(out, out.cm, out.ela),]
+bfeats3.ela_curv = bfeats2.ela_curv[-c(out, out.cm, out.ela),]
+bfeats3.ela_local = bfeats2.ela_local[-c(out, out.cm, out.ela),]
+#2810 observation out of 30000 observation left for further steps
+
+#save data for further tasks
+save(list = ls(all=TRUE), file="../3-DataPreprocessing.RData")
 #-----------------------------------------------------------------------------------------------------------
 

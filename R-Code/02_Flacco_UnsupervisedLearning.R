@@ -1,6 +1,6 @@
 # Group 03
 # Team Members:
-#
+# Christian Siemen (394724)
 #
 #
 #
@@ -9,6 +9,12 @@
 #
 #Uses the preprocessed data from Part01 and analysis the data by applying techniques from the
 #unsupervised learning.
+
+#load data from part 01 preprocessing
+load("../3-DataPreprocessing.RData")
+
+#IMPORTANT
+#bfeats3, bfeats3.cm_angle, bfeats3.cm_conv, etc. is used, because this is the orig dataset without outliers
 
 #2.1 Principal Component Analysis (PCA)
 
