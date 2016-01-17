@@ -763,7 +763,7 @@ boxplot(bfeats.ela_local.scale[,8:14], range=4, outline=TRUE, names=c(8:14), yla
 
 
 #identify maximum sigma-value per row /problem instance
-#ignore feat 12 from ela_local, because as seen by boxplots this feature cannot be normally distributed
+#ignore feat12 from ela_local, because as seen by boxplots this feature cannot be normally distributed
 bfeats.scale_max = apply(bfeats.scale[,-57], 1, max)
 #identify those > 4.5 sigma
 #we decided to use 4.5 sigma instead of 3.5 sigma in the lecture due to the large number of rows
@@ -777,6 +777,7 @@ out = which(abs(bfeats.scale_max) > 4.5)
 #2566 2569 2619 2621 2622 2624 2625 2628 2778 2779 2794
 #exclude outliers
 bfeats2 = bfeats[-out,]
+metadata2 = metadata[-out,]
 bfeats2.cm_angle = bfeats.cm_angle[-out,]
 bfeats2.cm_conv = bfeats.cm_conv[-out,]
 bfeats2.cm_grad = bfeats.cm_grad[-out,]
@@ -930,6 +931,7 @@ out.ela = which(bfeats2.distances.ela > bfeats2.limit.ela)
 
 #exclude multidimensional outliers
 bfeats3 = bfeats2[-c(out, out.cm, out.ela),]
+metadata3 = metadata2[-c(out, out.cm, out.ela),]
 bfeats3.cm_angle = bfeats2.cm_angle[-c(out, out.cm, out.ela),]
 bfeats3.cm_conv = bfeats2.cm_conv[-c(out, out.cm, out.ela),]
 bfeats3.cm_grad = bfeats2.cm_grad[-c(out, out.cm, out.ela),]
@@ -937,6 +939,11 @@ bfeats3.ela_conv = bfeats2.ela_conv[-c(out, out.cm, out.ela),]
 bfeats3.ela_curv = bfeats2.ela_curv[-c(out, out.cm, out.ela),]
 bfeats3.ela_local = bfeats2.ela_local[-c(out, out.cm, out.ela),]
 #2810 observation out of 30000 observation left for further steps
+
+#exclude those feature which have var = 0 after outlier elamination
+which(sapply(bfeats3[,1:length(bfeats3)], var)==0)
+bfeats3 = bfeats3[,-50]
+bfeats3.ela_local = bfeats3.ela_local[,-5]
 
 #save data for further tasks
 save(list = ls(all=TRUE), file="../3-DataPreprocessing.RData")
