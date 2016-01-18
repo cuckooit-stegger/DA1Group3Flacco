@@ -1,17 +1,70 @@
 # Group 03
 # Team Members
 # Christian Siemen (394724)
-# 
+# Lucas Stegger (394881)
 #
 #
 
 #Part01 Data Preprocessing
 #
 #All methods which are necessary to preprocess the flacco data for further analysis in Part02.
+#-------------------------------------------------------------------------------------------------------
+#0.0 General settings
+#debug?
+debug = F
+
+#method to print debug messages, if debug is true
+debug.msg = function(s) {
+  #only print message if debug is true
+  if(debug == T) {
+    print(s)
+  }
+}
+
+#save default graphical parameters to be able to restore them before each new plot
+par.defaults = par(no.readonly = T)
+
+#write plots to pdf?
+pdf.create = T
+
+#pdf file settings
+pdf.path = "../plots/"
+
+pdf.filename.section = "1-1"
+pdf.filename.index = 1
+pdf.filename.main = ""
+
+#method to restore default graphical parameters
+par.reset = function(main = "") {
+  par = par.defaults
+  
+  #write plot to pdf?
+  if(pdf.create == T) {
+    pdf.filename.main = main
+    
+    pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
+    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8,27)
+    
+    debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
+  }
+  
+  #increase index for pdf files
+  pdf.filename.index <<- pdf.filename.index + 1
+}
+
+
+#method to begin a new section
+section.new = function(section = "1.1") {
+  #set section for pdf filename
+  pdf.filename.section <<- section
+  #reset filename index to 1
+  pdf.filename.index <<- 1
+}
 
 #-------------------------------------------------------------------------------------------------------
-#1.1 Flacco-specific preprocessing
+#1.0 Flacco-specific preprocessing
 #Special Preprocessing techniques for the special needs of the flacco dataset
+section.new("1-1")
 
 #load dataset and inspect
 load("../3-flacco1.RData")
@@ -89,12 +142,14 @@ panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) {
 
 #function to draw a scatterplot with custom upper and diagonal panels and with legend
 pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
+  #reset window settings
+  par.reset(main = m)
   #use full window for legend
   par(xpd=TRUE)
   oma = c(4,4,6,6)
   #different margins in case of legend
   if(legend.title != "no") {
-    oma = c(4,4,6,12)
+    oma = c(4,4,6,18)
   }
   #plot the scatterplots
   pairs(x, panel = function (x, y, ...) {
@@ -107,6 +162,8 @@ pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=N
   if(legend.title != "no") {
     legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
   }
+  
+  dev.off()
 }
 
 #function for determining the amount of pairwise correlation (pearson) within a certain dataset
@@ -209,6 +266,8 @@ require(scatterplot3d)
 
 #custom function for scatterplot3d including legend on the bottom
 scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, legend.text, legend.col, legend.title) {
+  #reset window settings
+  par.reset(main = main)
   layout(rbind(1,2), heights=c(7,1))
   scatterplot3d(x, y, z, angle=angle, pch=19, cex.lab=1, type="p", main=main, xlab=xlab,
                 ylab=ylab, zlab=zlab, color=col)
@@ -220,6 +279,8 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   #reset normal settings
   layout(matrix(1, ncol=1))
   par(mar=c(8,5,5,5))
+  
+  dev.off()
 }
 
 
@@ -343,11 +404,14 @@ cor.detect(bfeats, l=.9)
 #-----------------------------------------------------------------------------------------------------------
 
 #1.2 Tests for normality
-
+section.new("1-2")
 #
 #method for different normality test
 #method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
 normal.custom <- function(x, title, col=colors[1], round=6) {
+  #reset window settings
+  par.reset(main = title)
+  
   #draw qqplot
   qqnorm(x, main = title,pch=19,
          cex.lab=1,cex.main=1,ylab="Sample Quantiles", col=col)
@@ -355,6 +419,8 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
   qqline(x,lwd=2,col="red")
   #view histogram and p-value of SW-Test
   hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
+  
+  dev.off()
 }
 
 #apply the normality tests to single features of the dataset (in groups of 5 for displaying issues)
@@ -469,6 +535,9 @@ mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1
 #custom function for display x^2 plot for testing multivariate normal distribution
 require(MASS)
 normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
+  #reset window settings
+  par.reset(main = main)
+  
   cm = colMeans(data)
   S = cov(data)
   #calculating distances in the multidimensional room
@@ -493,6 +562,7 @@ normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
          which(attributes(data)$row.names == names(out)),cex=1,col="blue")
   }
   
+  dev.off()
 }
 
 #apply the chi-sq-plot to the whole dataset
@@ -556,6 +626,7 @@ mvShapiro.Test(as.matrix(bfeats.ela_curv[which(metadata[,1]==3 & metadata[,6]==3
 #-----------------------------------------------------------------------------------------------------------
 
 #1.3 Transformation to Normality
+section.new("1-3")
 
 #Since we know from the previous section that the data does not represent a normal distribution in the single
 #features as well as not a multivariate distribution as a whole (even the subset not that much), we will apply
@@ -597,6 +668,9 @@ which(bfeats.sw_pvalue > 0.01)
 
 #function for displaying qqplot and SW pvalue before and after boxcox transformation
 boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], round=6) {
+  #reset window settings
+  par.reset(main = title)
+  
   #draw qqplot before
   qqnorm(before_data, main = title ,pch=19,
          cex.lab=1,cex.main=1,ylab="Sample Quantiles", xlab= paste("SW-Test: ", round(shapiro.test(before_data)$p.value, round)),
@@ -610,6 +684,8 @@ boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], ro
          col=col)
   #insert "optimal" line
   qqline(after_data,lwd=2,col="red")
+  
+  dev.off()
 }
 
 #examining qqplot before and after boxcox transformation to dataset:
@@ -673,6 +749,7 @@ bfeats.boxcox
 #-----------------------------------------------------------------------------------------------------------
 
 #1.4 Outlier Detection
+section.new("1-4")
 
 #one dimensional outliers:
 
@@ -698,7 +775,12 @@ bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
 #one displaying one repl (see metadata), because values are often equal, therefore only 1/10 of outliers identified
 #by number
 dotplot.custom <- function(x, title) {
+  #reset window settings
+  par.reset(main = title)
+  
   stripchart(x,method="stack",pch=1,main=title)
+  
+  dev.off()
 }
 #cm_angle
 #2 outliers can be easily identified -> 111, 851
@@ -788,6 +870,9 @@ bfeats2.ela_local = bfeats.ela_local[-out,]
 #2-dimensional outliers
 
 pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
+  #reset window settings
+  par.reset(main = m)
+  
   #plot the scatterplots
   pairs(x, panel = function (x, y, ...) {
     points(x, y, ...)
@@ -795,6 +880,8 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
     abline(lm(y ~ x), col = "blue") 
     #include correlation coefficients in upper panel and histograms on diagonal
   }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
+  
+  dev.off()
 }
 
 
@@ -831,6 +918,9 @@ pairs_out.custom(princomp_feat_groups, m="Correlation between Feature Groups",
 #custom function for display x^2 plot for testing multivariate normal distribution
 require(MASS)
 outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
+  #reset window settings
+  par.reset(main = main)
+  
   cm = colMeans(data)
   S = cov(data)
   #calculating distances in the multidimensional room
@@ -853,6 +943,7 @@ outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
     points(qc[out], sd[out], col="red", pch=1, cex=2)
   }
   
+  dev.off()
 }
 
 #identify multidimensional outliers from the whole dataset
