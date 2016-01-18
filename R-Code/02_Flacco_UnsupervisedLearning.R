@@ -718,19 +718,103 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
 }
 
 #apply methods to whole dataset and all features
+#single: 2 clusters -> one cluster very small
+#complete: 2 clusters -> one cluster very small
+#average: 2 clusters -> one cluster very small
+#centroid: 2 clusters -> one cluster very small
+#ward.D1: 3 clusters -> seems to be good clustering (visualization below)
+#ward.D2: 3 clusters -> one cluster very small
 aggl_dend.custom(bfeats3[,2:58])
 
+#based on centroid linkage: 2 clusters
+bfeats3.aggl.wardD =  hclust(dist(bfeats3[,2:58]), method="ward.D")
+bfeats3.aggl.wardD$group = cutree(bfeats3.aggl.wardD, k=2)
+
+#visualization of ward.D cluster method
+#reveals two clusters, but differently from kmeans clustering in 2.3.1
+pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs (2 clusters)", 
+                   col=colors[bfeats3.aggl.wardD$group],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+scatterplot3d.custom(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+                     angle=75, main="Agglomerative clustering (2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.aggl.wardD$group], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+
+
 #apply methods to one block setting + funnel and all features
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:58])
+#for elaminating influence of block setting
+#ward.D is most appropriate when implementing -> 4 clusters
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3),2:58])
+bfeats3.block3.aggl.wardD =  hclust(dist(bfeats3[which(metadata3[,1]==3),2:58]), method="ward.D")
+bfeats3.block3.aggl.wardD$group = cutree(bfeats3.block3.aggl.wardD, k=4)
 
-#apply methods to one block setting + random and all features
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==2),2:58])
+#in comparison to kmeans algorithm some more clusters seem to be reasonable for agglomerative clustering
+#this shows up some more clusters than only the topologies from the input parameters
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1], 
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3),2], 
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3),3],
+                     angle=200, main="Agglomerative Clustering (4 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.aggl.wardD$group],pch=19)
+scatterplot3d(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1], 
+              bfeats3.pca_cor$scores[which(metadata3[,1]==3),2], 
+              bfeats3.pca_cor$scores[which(metadata3[,1]==3),3],
+              angle=200, main="Kmeans algorithm (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.clust2$cluster],pch=19)
 
-#apply methods to one block setting + funnel and only CM-features
+
+
+#apply methods to one block setting + funnel topology problems and only CM-features
+#as we know from 2.3.1 that CM-Features can split up these instances quite well
+#average, complete, ward.D and ward.D2 methods all lead to two clusters
+#example implementation of average linkage
 aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18])
+bfeats3.block3.fun.aggl.av =  hclust(dist(bfeats3[which(metadata3[,1]==3& bfeats3[,1]==1),2:18]), method="average")
+bfeats3.block3.fun.aggl.av$group = cutree(bfeats3.block3.fun.aggl.av, k=2)
+
+#visualization
+#agglomerative splits up data differently from kmeans
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+              angle=80, main="Agglomerative Clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.fun.aggl.av$group],pch=19)
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+              angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.cm.clust2$cluster],pch=19)
+
+
+
 
 #apply methods to one block setting + random and only ELA-features
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3),19:58])
+#based on wardD / wardD2 4 clusters are appropriate
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3, bfeats3[,1]==2),19:58])
+bfeats3.block3.ran.aggl.av =  hclust(dist(bfeats3[which(metadata3[,1]==3& bfeats3[,1]==2),19:58]), method="ward.D")
+bfeats3.block3.ran.aggl.av$group = cutree(bfeats3.block3.ran.aggl.av, k=4)
 
+#comparison to kmeans shows another number of clusters 
+#and more detailed distinction of clusters
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+              angle=80, main="Agglomerative Clustering (4 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.ran.aggl.av$group],pch=19)
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+              angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.ela_ran.clust2$cluster],pch=19)
+
+#findings from agglomerative clustering
+#in comparison to kmeans results do differ for CM- and ELA-features
+#are similar for the whole dataset
+
+save(list = ls(all=TRUE), file="../3-UnsupervisedLearning.RData")
 
 #-----------------------------------------------------------------------------------------------------------
