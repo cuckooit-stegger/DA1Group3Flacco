@@ -698,8 +698,39 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2
 
 #2.3.2 Hierarchical Clustering
 
+#custom function for creating dendrograms with agglomerative clustering to the
+#methods defind in the parameter settings
+aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
+  #set margin settings and layout
+  par(mar = c(0, 5, 4, 2) + 0.1)
+  layout(matrix(1:6, ncol=3, byrow=TRUE))
+  #create dendrograms applying different methods
+  sapply(methods,
+         function(x) plot(hclust(dist(data), x),
+                               hang = -1, 
+                               labels = FALSE, 
+                               las = 1,
+                               xlab = "", 
+                               sub = "",
+                               main = paste("Cluster Dendrogram(", x,
+                                            " linkage)"),
+                               cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
+}
 
+#apply methods to whole dataset and all features
+aggl_dend.custom(bfeats3[,2:58])
 
+#apply methods to one block setting + funnel and all features
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:58])
+
+#apply methods to one block setting + random and all features
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==2),2:58])
+
+#apply methods to one block setting + funnel and only CM-features
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18])
+
+#apply methods to one block setting + random and only ELA-features
+aggl_dend.custom(bfeats3[which(metadata3[,1]==3),19:58])
 
 
 #-----------------------------------------------------------------------------------------------------------
