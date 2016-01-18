@@ -818,3 +818,21 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2)
 save(list = ls(all=TRUE), file="../3-UnsupervisedLearning.RData")
 
 #-----------------------------------------------------------------------------------------------------------
+
+#2.3.3 Divisive Hierarchical Clustering
+
+require(cluster)
+dv = diana(bfeats3[1:1000,2:18], diss=FALSE, metric="euclidean")
+plot(dv)
+dv$cluster = cutree(as.hclust(dv), k=2)
+
+
+
+pairs_noreg.custom(bfeats3.pca_cor$scores[1:1000,1:6], m="Scatterplot on PCs (2 clusters)", col=colors[dv$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+#scatterplot3d shows the same 
+scatterplot3d.custom(bfeats3.pca_cor$scores[1:1000,1], bfeats3.pca_cor$scores[1:1000,2], bfeats3.pca_cor$scores[1:1000,3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[dv$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
