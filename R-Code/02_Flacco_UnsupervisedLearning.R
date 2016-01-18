@@ -20,7 +20,8 @@ load("../3-DataPreprocessing.RData")
 
 #function to draw a scatterplot without regression lines, because 
 #correlation of PCs is 0 from definition
-pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
+pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL, 
+                               pch=19, legend.pch = 19) {
   #use full window for legend
   par(xpd=TRUE)
   oma = c(4,4,6,6)
@@ -32,11 +33,11 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
   pairs(x, panel = function (x, y, ...) {
     points(x, y, ...)
     #include correlation coefficients in upper panel and histograms on diagonal
-  }, pch=19, diag.panel=panel.hist2, main=m, col=color, oma=oma)
+  }, pch=pch, diag.panel=panel.hist2, main=m, col=color, oma=oma)
   #put legend
   #only if legend required
   if(legend.title != "no") {
-    legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
+    legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
   }
 }
 
@@ -480,7 +481,6 @@ scatterplot3d.custom(bfeats3.mds_scale.ela$points[,1], bfeats3.mds_scale.ela$poi
 #set seed for allow reproduction of results
 set.seed(1906)
 
-
 #custom function for calculating the within-group sum of squares (WSS)
 #for range of number of clusters
 #if required add expected wss of uniform data (only in case data is standardized)
@@ -505,14 +505,200 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
 
 
 
-kmeans_wss.custom(apply(bfeats3[,1:58],2,scale), 8, main="bfeats3")
-#
+#standardize variables by their range
+bfeats3.s = sweep(bfeats3, 2, sapply(bfeats3, function(x) diff(range(x))), FUN='/')
+#cluster dataset when looking onto the whole dataset
+kmeans_wss.custom(bfeats3.s, 12, main="whole dataset")
+#from the screeplots it could be suggested to have 2 or 5 clusters
+#apply both
+bfeats3.clust2 = kmeans(bfeats3.s, centers=2, nstart=25)
+bfeats3.clust5 = kmeans(bfeats3.s, centers=5, nstart=25)
+#show centers of cluster
+#2 cluster; 1. cluster 1458 obs , 2. cluster 1352 obs
+bfeats3.clust2$centers * sapply(bfeats3, function(x) diff(range(x)))
+#5 cluster: 1. cluster 473 obs, 2. cluster 439 obs, 3. cluster 591, 4.cluster 336, 5.cluster 971 obs
+bfeats3.clust5$centers * sapply(bfeats3, function(x) diff(range(x)))
 
+#the two cluster solution reminds us of the underlying topology
+#for 96% of obs this is the case
+pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs (2 clusters)", col=colors[bfeats3.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+#scatterplot3d shows the same 
+scatterplot3d.custom(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.clust2$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+#the five cluster approach shows up clusters which seem to be well organized when looking at the first PCs
+pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs (5 clusters)", col=colors[bfeats3.clust5$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2", "3", "4", "5"), legend.col=colors[1:5])
+scatterplot3d.custom(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (5 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.clust5$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2", "3", "4", "5"), legend.col=colors[1:5])
+
+
+
+#as we saw a quite strong influence of the blocks metadata on the clusters in the PCs
+#next we apply a cluster analysis within only one cluster setting, for excluding that influence
+#which came from different CM-settings
+kmeans_wss.custom(bfeats3.s[which(metadata3[,1]==3),], 12, main="blocks == 3")
+#elbow at 2 clusters
+#apply
+bfeats3.block3.clust2 = kmeans(bfeats3.s[which(metadata3[,1]==3),], centers=2, nstart=25)
+#show centers of cluster
+bfeats3.block3.clust2$centers * sapply(bfeats3, function(x) diff(range(x)))
+
+#visualize results
+#still we can see the topology difference
+pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs (block==3, 2 clusters)",
+                   col=colors[bfeats3.block3.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+#scatterplot3d shows the same 
+scatterplot3d.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1], bfeats3.pca_cor$scores[which(metadata3[,1]==3),2],
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3),3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (block==3, 2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.block3.clust2$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+
+
+
+#even only choosing one topology setting is tested for excluding that influence
+#funnel
+kmeans_wss.custom(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),], 12, main="blocks=3, top=funnel")
+bfeats3.top_fun.clust2 = kmeans(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),], centers=2, nstart=25)
+#random
+kmeans_wss.custom(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==2),], 12, main="blocks=3, top=random")
+bfeats3.top_ran.clust2 = kmeans(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==2),], centers=2, nstart=25)
+
+#funnel topology
+#not really distinct clusters
+pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),1:6], 
+                    m="Scatterplot on PCs (block=3, top=funnel, 2 clusters)",
+                   col=colors[bfeats3.top_fun.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+scatterplot3d.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2],
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (block=3, top=funnel, 2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.top_fun.clust2$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+#random topology
+#there are two distinct clusters
+pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),1:6], 
+                   m="Scatterplot on PCs (block=3, top=random, 2 clusters)",
+                   col=colors[bfeats3.top_ran.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+scatterplot3d.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2],
+                     bfeats3.pca_cor$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (block=3, top=random, 2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", col=colors[bfeats3.top_ran.clust2$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+
+
+#another idea would be doing clustering only on CM features 
+#because CM is another method than ELA
+kmeans_wss.custom(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18], 12, main="CM features")
+#2 clusters is appropriate
+bfeats3.cm.clust2 = kmeans(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18], centers=2, nstart=25)
+
+#comparison of overall-feature / CM-feature clustering on Funnel Data
+#it shows that using only CM-Features for clustering is more precise in case of funnel data
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),2],
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),3],
+              angle=20, main="Clustering using all features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.top_fun.clust2$cluster], pch=19, cex.lab=1, type="p")
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),2],
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3 & bfeats3[,1]==1),3],
+              angle=20, main="Clustering using only CM-Features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC",color=colors[bfeats3.cm.clust2$cluster], cex.lab=1, type="p", pch=19)
+
+
+
+#applying kmeans using the ELA features
+kmeans_wss.custom(bfeats3.s[,19:58], 12, main="ELA features")
+#2 clusters is strongly recommended
+bfeats3.ela.clust2 = kmeans(bfeats3.s[,19:58], centers=2, nstart=25)
+
+#
+pairs_noreg.custom(bfeats3.pca_cor.ela$scores[,1:6], 
+                   m="Scatterplot on ELA-PCs (2 clusters)",
+                   col=colors[bfeats3.ela.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+
+#comparison of clustering with ELA-features only and all features
+#shows that ELA-features are enough for clustering data
+#according to their landscape topology (funnel vs. random)
+layout(matrix(1:2, ncol=2))
+#clusters 96% correct
+scatterplot3d(bfeats3.pca_cor.ela$scores[,1], 
+              bfeats3.pca_cor.ela$scores[,2],
+              bfeats3.pca_cor.ela$scores[,3],
+              angle=115, main="Clustering using all features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.clust2$cluster], pch=19, cex.lab=1, type="p")
+#clusters already 83% correctly
+scatterplot3d(bfeats3.pca_cor.ela$scores[,1], 
+              bfeats3.pca_cor.ela$scores[,2],
+              bfeats3.pca_cor.ela$scores[,3],
+              angle=115, main="Clustering using only ELA-Features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC",color=colors[bfeats3.ela.clust2$cluster], cex.lab=1, type="p", pch=19)
+
+
+
+#also when clustering the problems with random topology
+#using only ELA features is precise
+bfeats3.ela_ran.clust2 = kmeans(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==2),19:58], centers=2, nstart=25)
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),2],
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),3],
+              angle=340, main="Clustering using all features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.top_ran.clust2$cluster], pch=19, cex.lab=1, type="p")
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),2],
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2),3],
+              angle=340, main="Clustering using only ELA-Features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC",color=colors[bfeats3.ela_ran.clust2$cluster], cex.lab=1, type="p", pch=19)
+
+#outcomes from kmeans-clustering:
+#using all features for clustering whole dataset: 2 / 5 clusters
+#   -2 cluster represent problem landscape
+#
+#using all features for clustering only one block setting: 2 cluster
+#   -problem landscape still represented by clusters
+#
+#using all features for clustering only one block setting and one problem landscape topology: 2 cluster
+#   -funnel topology -> clusters not precise
+#   -random topology -> 2 precise clusters
+#
+#using only CM-Features for clustering one block setting and funnel topology:
+#   -2 clusters are now precise (better than using all features for clustering)
+#so when knowing that problem landscape has funnel topology only CM-Features should be used for clustering landscape
+#
+#using only ELA-Features is almost as precise as using all features for cluster
+#when clustering the landscape topology of the problem instances
+#also when clustering random topology setting using ELA-Features is enough
+#in this cases using ELA-Features is enough and less costly
 
 
 #-----------------------------------------------------------------------------------------------------------
 
 #2.3.2 Hierarchical Clustering
+
+
 
 
 
