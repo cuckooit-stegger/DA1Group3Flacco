@@ -477,6 +477,37 @@ scatterplot3d.custom(bfeats3.mds_scale.ela$points[,1], bfeats3.mds_scale.ela$poi
 #2.3 Cluster Analysis
 #2.3.1 K-Means Algorithm
 
+#set seed for allow reproduction of results
+set.seed(1906)
+
+
+#custom function for calculating the within-group sum of squares (WSS)
+#for range of number of clusters
+#if required add expected wss of uniform data (only in case data is standardized)
+kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
+  n = nrow(data)
+  #variables for wss
+  wss = rep(0,max_clust)
+  #compute wss for one cluster
+  wss[1] = (n - 1) * sum(apply(data,2,  var))
+  #compute WSS for different number of clusters
+  for(i in 2:max_clust) {
+    #compute wss and use certain number of rep for centers
+    wss[i] = sum(kmeans(data, centers=i, nstart=25)$withinss)
+  }
+  #screeplot for different WSS amounts
+  #for deciding on number of clusters which is optimal
+  #normal scale and log scale
+  layout(matrix(1:2, ncol=2))
+  plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
+  plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
+}
+
+
+
+kmeans_wss.custom(apply(bfeats3[,1:58],2,scale), 8, main="bfeats3")
+#
+
 
 
 #-----------------------------------------------------------------------------------------------------------
