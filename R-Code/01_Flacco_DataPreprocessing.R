@@ -510,7 +510,7 @@ for(i in 1:3) {
 }
 #calculating average pvalues for each feature over all 30 subsets
 bfeats.sw_pvalue.subgroups = rowMeans(temp_mat[,-1])
-summary(bfeats.sw_pvalue.s1)
+summary(bfeats.sw_pvalue.subgroups)
 #assuming a significance niveau of 0.01 the normal distribution of following features cannot be rejected any longer:
 #cm_angle.dist_ctr2best.sd    1.10%   
 #cm_angle.angle.mean          1.12%
@@ -520,8 +520,8 @@ summary(bfeats.sw_pvalue.s1)
 #ela_curv.hessian_cond.lq     89.07%
 #ela_curv.hessian_cond.uq     8.32%
 #ela_curv.costs_fun_evals     7.15%
-which(bfeats.sw_pvalue.s1 > 0.01)
-bfeats.sw_pvalue.s1[which(bfeats.sw_pvalue.s1 > 0.01)]
+which(bfeats.sw_pvalue.subgroups > 0.01)
+bfeats.sw_pvalue.subgroups[which(bfeats.sw_pvalue.subgroups > 0.01)]
 
 #also when looking onto the PC of the feature groups the pvalues do increase when looking on the subset separately
 #example for repl=1 and blocks=3:
