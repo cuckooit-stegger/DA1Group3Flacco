@@ -698,6 +698,8 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2
 
 #2.3.2 Hierarchical Clustering
 
+section.new("2-3-2")
+
 #custom function for creating dendrograms with agglomerative clustering to the
 #methods defind in the parameter settings
 aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
@@ -718,16 +720,13 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
 }
 
 #apply methods to whole dataset and all features
-#single: 2 clusters -> one cluster very small
-#complete: 2 clusters -> one cluster very small
-#average: 2 clusters -> one cluster very small
-#centroid: 2 clusters -> one cluster very small
+#complete: 2 clusters 
 #ward.D1: 3 clusters -> seems to be good clustering (visualization below)
-#ward.D2: 3 clusters -> one cluster very small
-aggl_dend.custom(bfeats3[,2:58])
+#ward.D2: 3 clusters 
+aggl_dend.custom(bfeats3.s[,2:58])
 
 #based on centroid linkage: 2 clusters
-bfeats3.aggl.wardD =  hclust(dist(bfeats3[,2:58]), method="ward.D")
+bfeats3.aggl.wardD =  hclust(dist(bfeats3.s[,2:58]), method="ward.D")
 bfeats3.aggl.wardD$group = cutree(bfeats3.aggl.wardD, k=2)
 
 #visualization of ward.D cluster method
@@ -743,12 +742,12 @@ scatterplot3d.custom(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfe
 
 
 
-#apply methods to one block setting + funnel and all features
+#apply methods to one block setting and all features
 #for elaminating influence of block setting
-#ward.D is most appropriate when implementing -> 4 clusters
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3),2:58])
-bfeats3.block3.aggl.wardD =  hclust(dist(bfeats3[which(metadata3[,1]==3),2:58]), method="ward.D")
-bfeats3.block3.aggl.wardD$group = cutree(bfeats3.block3.aggl.wardD, k=4)
+#ward.D is most appropriate when implementing -> 2 clusters
+aggl_dend.custom(bfeats3.s[which(metadata3[,1]==3),2:58])
+bfeats3.block3.aggl.wardD =  hclust(dist(bfeats3.s[which(metadata3[,1]==3),2:58]), method="ward.D")
+bfeats3.block3.aggl.wardD$group = cutree(bfeats3.block3.aggl.wardD, k=2)
 
 #in comparison to kmeans algorithm some more clusters seem to be reasonable for agglomerative clustering
 #this shows up some more clusters than only the topologies from the input parameters
@@ -770,8 +769,8 @@ scatterplot3d(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1],
 #as we know from 2.3.1 that CM-Features can split up these instances quite well
 #average, complete, ward.D and ward.D2 methods all lead to two clusters
 #example implementation of average linkage
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18])
-bfeats3.block3.fun.aggl.av =  hclust(dist(bfeats3[which(metadata3[,1]==3& bfeats3[,1]==1),2:18]), method="average")
+aggl_dend.custom(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18])
+bfeats3.block3.fun.aggl.av =  hclust(dist(bfeats3.s[which(metadata3[,1]==3& bfeats3[,1]==1),2:18]), method="average")
 bfeats3.block3.fun.aggl.av$group = cutree(bfeats3.block3.fun.aggl.av, k=2)
 
 #visualization
@@ -780,22 +779,22 @@ layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
               bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
               bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
-              angle=80, main="Agglomerative Clustering (2 clusters)", xlab="1 PC",
+              angle=20, main="Agglomerative Clustering (2 clusters)", xlab="1 PC",
               ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.fun.aggl.av$group],pch=19)
 scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
               bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
               bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
-              angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
+              angle=20, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
               ylab="2 PC", zlab="3 PC", color=colors[bfeats3.cm.clust2$cluster],pch=19)
 
 
 
 
 #apply methods to one block setting + random and only ELA-features
-#based on wardD / wardD2 4 clusters are appropriate
-aggl_dend.custom(bfeats3[which(metadata3[,1]==3, bfeats3[,1]==2),19:58])
-bfeats3.block3.ran.aggl.av =  hclust(dist(bfeats3[which(metadata3[,1]==3& bfeats3[,1]==2),19:58]), method="ward.D")
-bfeats3.block3.ran.aggl.av$group = cutree(bfeats3.block3.ran.aggl.av, k=4)
+#based on wardD / wardD 2 clusters are appropriate
+aggl_dend.custom(bfeats3.s[which(metadata3[,1]==3, bfeats3[,1]==2),19:58])
+bfeats3.block3.ran.aggl.av =  hclust(dist(bfeats3.s[which(metadata3[,1]==3& bfeats3[,1]==2),19:58]), method="ward.D")
+bfeats3.block3.ran.aggl.av$group = cutree(bfeats3.block3.ran.aggl.av, k=2)
 
 #comparison to kmeans shows another number of clusters 
 #and more detailed distinction of clusters
@@ -836,3 +835,5 @@ scatterplot3d.custom(bfeats3.pca_cor$scores[1:1000,1], bfeats3.pca_cor$scores[1:
                      angle=75, main="3D Scatterplot on 1., 2., 3. PC (2 clusters)", xlab="1 PC",
                      ylab="2 PC", zlab="3 PC", col=colors[dv$cluster], legend.title="Cluster", 
                      legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+
+#TODO
