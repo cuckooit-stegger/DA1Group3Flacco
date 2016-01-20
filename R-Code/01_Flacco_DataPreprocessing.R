@@ -8,58 +8,9 @@
 #Part01 Data Preprocessing
 #
 #All methods which are necessary to preprocess the flacco data for further analysis in Part02.
-#-------------------------------------------------------------------------------------------------------
-#0.0 General settings
-#debug?
-debug = F
 
-#method to print debug messages, if debug is true
-debug.msg = function(s) {
-  #only print message if debug is true
-  if(debug == T) {
-    print(s)
-  }
-}
-
-#save default graphical parameters to be able to restore them before each new plot
-par.defaults = par(no.readonly = T)
-
-#write plots to pdf?
-pdf.create = T
-
-#pdf file settings
-pdf.path = "../plots/"
-
-pdf.filename.section = "1-1"
-pdf.filename.index = 1
-pdf.filename.main = ""
-
-#method to restore default graphical parameters
-par.reset = function(main = "") {
-  par = par.defaults
-  
-  #write plot to pdf?
-  if(pdf.create == T) {
-    pdf.filename.main = main
-    
-    pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
-    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8,27)
-    
-    debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
-  }
-  
-  #increase index for pdf files
-  pdf.filename.index <<- pdf.filename.index + 1
-}
-
-
-#method to begin a new section
-section.new = function(section = "1.1") {
-  #set section for pdf filename
-  pdf.filename.section <<- section
-  #reset filename index to 1
-  pdf.filename.index <<- 1
-}
+#load custom functions
+load("../3-customFunctions.RData")
 
 #-------------------------------------------------------------------------------------------------------
 #1.0 Flacco-specific preprocessing
@@ -104,84 +55,12 @@ bfeats.ela_local= bfeats[,seq(46,59)]
 str(bfeats)
 summary(bfeats)
 #no NaN are in the dataset, no columns with var = 0 left
-
-# colors for the functions
-colors = c('#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12', '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d', '#666666', '#FF0000', '#00FF00', '#0000FF', '#FFFF00')
-
 #------------------------------------------------------------------------------------------------------------
 
 #1.1 Visualization
 #Visualization of the dataset
 
 #Scatterplots
-#function to print histograms to the diagonal panels of a scatterplot
-panel.hist2 <- function(x, ...) {
-  usr <- par("usr"); on.exit(par(usr))
-  #window settings
-  par(usr = c(usr[1:2], 0, 1.5) )
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks; nB <- length(breaks)
-  y <- h$counts; y <- y/max(y)
-  #draw rects of the histogram
-  rect(breaks[-nB], 0, breaks[-1], y,  ...)
-}
-
-#function to print corelations to the upper panels of a scatterplot
-panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) { 
-  usr <- par("usr"); on.exit(par(usr))
-  #window settings
-  par(usr = c(0, 1, 0, 1))
-  #calculate pearson correlation coefficient
-  r <- abs(cor(x, y))
-  #calculate spearman correlation coefficient
-  rsp <- abs(cor(x,y,method="spearman"))
-  txt <- format(c(r, 0.123456789), digits=digits)[1]
-  txt2 <- format(c(rsp, 0.123456789), digits=digits)[1]
-  text(0.5, 0.5, paste(txt," / ", txt2,sep=""), cex = cex.cor,col="blue")
-}
-
-#function to draw a scatterplot with custom upper and diagonal panels and with legend
-pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
-  #reset window settings
-  par.reset(main = m)
-  #use full window for legend
-  par(xpd=TRUE)
-  oma = c(4,4,6,6)
-  #different margins in case of legend
-  if(legend.title != "no") {
-    oma = c(4,4,6,18)
-  }
-  #plot the scatterplots
-  pairs(x, panel = function (x, y, ...) {
-    points(x, y, ...)
-    abline(lm(y ~ x), col = "blue") 
-    #include correlation coefficients in upper panel and histograms on diagonal
-  }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color, oma=oma)
-  #put legend
-  #only if legend required
-  if(legend.title != "no") {
-    legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
-  }
-  
-  dev.off()
-}
-
-#function for determining the amount of pairwise correlation (pearson) within a certain dataset
-pairs.cor <- function(x) {
-  sum.corr = 0
-  #sum up pairwise correlations
-  for(i in 1:length(x)) {
-    for(j in 1:length(x)) {
-      if(i != j) {
-        sum.corr = sum.corr + abs(cor(x[,i],x[,j]))
-      }
-    }
-  }
-  #divide by number of pairs evaluated
-  sum.corr / (length(x)*(length(x) - 1))
-}
-
-#
 #correlation within the feature-groups is relatively high. This retrieves that it makes sense in further steps to
 #reduce dimensionality
 pairs.custom(bfeats.cm_angle, m="Correlation within Feature Group cm_angle")
@@ -259,31 +138,10 @@ pairs.custom(princomp_feat_groups[2:4], m="Correlation between Feature Groups", 
              legend.col = colors[c(3,5,7)])
 #number of peaks has no significant influence; prob.seed and repl neither.
 
-#
+
 #scatterplot3d
 #include package
 require(scatterplot3d) 
-
-#custom function for scatterplot3d including legend on the bottom
-scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, legend.text, legend.col, legend.title) {
-  require(scatterplot3d)
-  #reset window settings
-  par.reset(main = main)
-  layout(rbind(1,2), heights=c(7,1))
-  scatterplot3d(x, y, z, angle=angle, pch=19, cex.lab=1, type="p", main=main, xlab=xlab,
-                ylab=ylab, zlab=zlab, color=col)
-  par(mar=c(0,0,0,0))
-  plot.new()
-  if(legend.title != "no") {
-    legend('center','groups',legend=legend.text, col=legend.col, pch=19, title=legend.title, bty ="n", horiz=TRUE, cex=0.8)
-  }
-  #reset normal settings
-  layout(matrix(1, ncol=1))
-  par(mar=c(8,5,5,5))
-  
-  dev.off()
-}
-
 
 #analyizing the distance to best, worst and the ratio of best and worst in a 3d scatterplot results
 #in showing up three distinct clusters, consisting of a different number of blocks
@@ -360,29 +218,6 @@ scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv
                      "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
 
 
-#mkubicki
-#function:
-#cor.detect: display all correlations (pearson) between columns in given dataset that have at least value l
-#parameters:
-#x: data.frame to inspect
-#l: minimum correlation. display correlation if absolute of cor is >=l
-cor.detect <- function(x, l=0) {
-  for(c in 1:ncol(x)) {
-    col1 = colnames(bfeats)[c]
-    if(c+1 < ncol(x)){
-      for(d in (c+1):ncol(x)) {
-        col2 = colnames(bfeats)[d]
-        cur.cor = cor(x[c], x[d])
-        #print(paste("cor(",col1, ",", col2,")=", cur.cor))
-        if(abs(cur.cor) >= l) {
-          print(paste("cor(",col1, ",", col2,") =", cur.cor))
-        }
-      }
-    }
-  }
-}
-
-
 #find all correlations
 cor.detect(bfeats)
 
@@ -406,23 +241,6 @@ cor.detect(bfeats, l=.9)
 
 #1.2 Tests for normality
 section.new("1-2")
-#
-#method for different normality test
-#method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
-normal.custom <- function(x, title, col=colors[1], round=6) {
-  #reset window settings
-  par.reset(main = title)
-  
-  #draw qqplot
-  qqnorm(x, main = title,pch=19,
-         cex.lab=1,cex.main=1,ylab="Sample Quantiles", col=col)
-  #insert "optimal" line
-  qqline(x,lwd=2,col="red")
-  #view histogram and p-value of SW-Test
-  hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
-  
-  dev.off()
-}
 
 #apply the normality tests to single features of the dataset (in groups of 5 for displaying issues)
 #it can be seen that assuming a significance niveau of 0.01 for each of the features
@@ -533,39 +351,6 @@ mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1
 
 #Tests for multivariate normal distribution:
 
-#custom function for display x^2 plot for testing multivariate normal distribution
-require(MASS)
-normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
-  #reset window settings
-  par.reset(main = main)
-  
-  cm = colMeans(data)
-  S = cov(data)
-  #calculating distances in the multidimensional room
-  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
-  
-  #plotting x^2 plot with datpoints
-  #df = number of cols in data
-  plot(qc <- qchisq((1:nrow(data)-1/2)/nrow(data), df=ncol(data)),
-       sd <-  sort(dis), xlab=expression(paste(chi^2, " Quantile")),
-       ylab="Ordered Distances", main=main,
-       pch=19,cex.lab=1,cex.axis=1,cex=1, col=col)
-  
-  #adding "optimal normally distribtion" line
-  abline(a=0,b=1,col= "red",lwd=2)
-  
-  #in case of outliers mark them
-  if(outl) {
-    out =  which(rank(abs(qc-sd), ties= "random") > nrow(data)-3)
-    print(out)
-    #show up rownumbers instead of rownames
-    text(qc[out], sd[out]-1.5, 
-         which(attributes(data)$row.names == names(out)),cex=1,col="blue")
-  }
-  
-  dev.off()
-}
-
 #apply the chi-sq-plot to the whole dataset
 #the datapoints do not seem to stick to the optimal line, so it is to assume that the data
 #is not multivariate normal distributed
@@ -637,20 +422,6 @@ section.new("1-3")
 #Box Cox Transformation
 require(AID)
 
-#custom function for applying boxcox transformation to features of a given dataset
-#the columns for which the boxcox shall be applied can be specified
-#because for some features it will not be possible due to computation limits or negative values
-boxcox.custom <- function(data, cols=1:length(data)) {
-  print("new")
-  data[,cols] = 
-    sapply(data[,cols], function(x) {
-    lambda <- boxcoxnc(as.numeric(x), method='sw', plotit=FALSE, lam=seq(-7,7,0.01))$result[[1]]
-    print(lambda)
-    tr <- (x^{lambda}-1)/lambda
-  })
-  data
-}
-
 #transform features to normality by boxcox transformation
 bfeats.boxcox = boxcox.custom(bfeats, c(2:10, 15:19, 21:29, 31:36, 38:43, 45, 47:49, 51, 53:56))
 
@@ -667,27 +438,6 @@ summary(bfeats.sw_pvalue)
 which(bfeats.boxcox.sw_pvalue > 0.01)
 which(bfeats.sw_pvalue > 0.01)
 
-#function for displaying qqplot and SW pvalue before and after boxcox transformation
-boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], round=6) {
-  #reset window settings
-  par.reset(main = title)
-  
-  #draw qqplot before
-  qqnorm(before_data, main = title ,pch=19,
-         cex.lab=1,cex.main=1,ylab="Sample Quantiles", xlab= paste("SW-Test: ", round(shapiro.test(before_data)$p.value, round)),
-         col=col)
-  #insert "optimal" line
-  qqline(before_data,lwd=2,col="red")
-  #view histogram and p-value of SW-Test
-  ##qqplot after transformation
-  qqnorm(after_data, pch=19, xlab="",
-         cex.lab=1,cex.main=1,ylab="", main= paste("SW-Test: ", round(shapiro.test(after_data)$p.value, 6)),
-         col=col)
-  #insert "optimal" line
-  qqline(after_data,lwd=2,col="red")
-  
-  dev.off()
-}
 
 #examining qqplot before and after boxcox transformation to dataset:
 #some of the features seem to fit better to the optimal line of normal distribution
@@ -770,19 +520,11 @@ bfeats.ela_conv.scale_max = apply(bfeats.ela_conv.scale, 1, max)
 bfeats.ela_curv.scale_max = apply(bfeats.ela_curv.scale, 1, max)
 bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
 
-#custom function to plot dotplots of the different feature sets
+
 #therefore max value of each problem instance of all features within feature group is plotted
 #for identifying outliers visually
 #one displaying one repl (see metadata), because values are often equal, therefore only 1/10 of outliers identified
 #by number
-dotplot.custom <- function(x, title) {
-  #reset window settings
-  par.reset(main = title)
-  
-  stripchart(x,method="stack",pch=1,main=title)
-  
-  dev.off()
-}
 #cm_angle
 #2 outliers can be easily identified -> 111, 851
 dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle")
@@ -870,22 +612,6 @@ bfeats2.ela_local = bfeats.ela_local[-out,]
 
 #2-dimensional outliers
 
-pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
-  #reset window settings
-  par.reset(main = m)
-  
-  #plot the scatterplots
-  pairs(x, panel = function (x, y, ...) {
-    points(x, y, ...)
-    points(x[outl], y[outl], cex=2, col="red", pch=1)
-    abline(lm(y ~ x), col = "blue") 
-    #include correlation coefficients in upper panel and histograms on diagonal
-  }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
-  
-  dev.off()
-}
-
-
 #since there is a large number of dimension we will basically examine the outliers
 #on scatterplots within the feature groups
 #cm_angle: no outliers can be directly identified
@@ -916,37 +642,6 @@ pairs_out.custom(princomp_feat_groups, m="Correlation between Feature Groups",
 #Multidimensional outliers
 #chi-sq-plot and distance calculation
 
-#custom function for display x^2 plot for testing multivariate normal distribution
-require(MASS)
-outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
-  #reset window settings
-  par.reset(main = main)
-  
-  cm = colMeans(data)
-  S = cov(data)
-  #calculating distances in the multidimensional room
-  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
-  
-  #plotting x^2 plot with datpoints
-  #df = number of cols in data
-  plot(qc <- qchisq((1:nrow(data)-1/2)/nrow(data), df=ncol(data)),
-       sd <-  sort(dis), xlab=expression(paste(chi^2, " Quantile")),
-       ylab="Ordered Distances", main=main,
-       pch=19,cex.lab=1,cex.axis=1,cex=1, col=col)
-  
-  #in case of outliers mark them
-  if(num_outl > 0) {
-    out =  which(rank(abs(sd), ties= "random") > nrow(data)-num_outl)
-    print(which(attributes(data)$row.names %in% names(out)))
-    #mark outliers
-    text(qc[out], sd[out]-1.5, 
-         which(attributes(data)$row.names %in% names(out)),cex=0.5,col="blue", pos=1)
-    points(qc[out], sd[out], col="red", pch=1, cex=2)
-  }
-  
-  dev.off()
-}
-
 #identify multidimensional outliers from the whole dataset
 #there are 11 outliers
 #559  560  561  566 1539 1540 1541 1544 2515 2516 2606
@@ -974,13 +669,6 @@ outlier_multi.custom(bfeats2.ela_curv, main="Multidimensional outliers (ela_curv
 #7 outliers: 549  554  555 1530 2508 2511 2513
 outlier_multi.custom(bfeats2.ela_local, main="Multidimensional outliers (ela_local)", num_outl=7)
 
-#calculate generalized suared distances
-distances.custom <- function(data) {
-  cm = colMeans(data)
-  S = cov(data)
-  #calculating distances in the multidimensional room
-  dis = apply(data, 1, function(x) t(x-cm) %*% ginv(S) %*% (x-cm))
-}
 
 #calculate distances for whole dataset
 bfeats2.distances = distances.custom(bfeats2)

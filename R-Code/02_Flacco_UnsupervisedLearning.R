@@ -10,42 +10,18 @@
 #Uses the preprocessed data from Part01 and analysis the data by applying techniques from the
 #unsupervised learning.
 
+#load custom functions
+load("../3-customFunctions.RData")
+
 #load data from part 01 preprocessing
 load("../3-DataPreprocessing.RData")
 
 #IMPORTANT
 #bfeats3, bfeats3.cm_angle, bfeats3.cm_conv, etc. is used, because this is the orig dataset without outliers
 
+# --------------------------------------------------------------------------------------------------------------
 #2.1 Principal Component Analysis (PCA)
 section.new("2-1")
-
-#function to draw a scatterplot without regression lines, because 
-#correlation of PCs is 0 from definition
-pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL, 
-                               pch=19, legend.pch = 19) {
-  #reset window settings
-  par.reset(main = m)
-  
-  #use full window for legend
-  par(xpd=TRUE)
-  oma = c(4,4,6,6)
-  #different margins in case of legend
-  if(legend.title != "no") {
-    oma = c(4,4,6,12)
-  }
-  #plot the scatterplots
-  pairs(x, panel = function (x, y, ...) {
-    points(x, y, ...)
-    #include correlation coefficients in upper panel and histograms on diagonal
-  }, pch=pch, diag.panel=panel.hist2, main=m, col=color, oma=oma)
-  #put legend
-  #only if legend required
-  if(legend.title != "no") {
-    legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
-  }
-  
-  dev.off()
-}
 
 #PCA analyis of the whole dataset
 #first based on covariance matrix (exclude topology since it is input parameter)
@@ -489,36 +465,6 @@ section.new("2-3-1")
 #set seed for allow reproduction of results
 set.seed(1906)
 
-#TODO include expected WSS as in tutorial of 21.01.2016
-
-#custom function for calculating the within-group sum of squares (WSS)
-#for range of number of clusters
-#if required add expected wss of uniform data (only in case data is standardized)
-kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
-  #reset window settings
-  par.reset(main = main)
-
-  n = nrow(data)
-  #variables for wss
-  wss = rep(0,max_clust)
-  #compute wss for one cluster
-  wss[1] = (n - 1) * sum(apply(data,2,  var))
-  #compute WSS for different number of clusters
-  for(i in 2:max_clust) {
-    #compute wss and use certain number of rep for centers
-    wss[i] = sum(kmeans(data, centers=i, nstart=25)$withinss)
-  }
-  #screeplot for different WSS amounts
-  #for deciding on number of clusters which is optimal
-  #normal scale and log scale
-  layout(matrix(1:2, ncol=2))
-  plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
-  plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
-  
-  dev.off()
-}
-
-
 
 #standardize variables by their range
 bfeats3.s = sweep(bfeats3, 2, sapply(bfeats3, function(x) diff(range(x))), FUN='/')
@@ -753,30 +699,6 @@ scatterplot3d(bfeats3.pca_cor$scores[,1],
 
 #2.3.2 Hierarchical Clustering
 section.new("2-3-2")
-
-#custom function for creating dendrograms with agglomerative clustering to the
-#methods defind in the parameter settings
-aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
-  #reset window settings
-  par.reset(main = "Dendrograms")
-  
-  #set margin settings and layout
-  par(mar = c(0, 5, 4, 2) + 0.1)
-  layout(matrix(1:6, ncol=3, byrow=TRUE))
-  #create dendrograms applying different methods
-  sapply(methods,
-         function(x) plot(hclust(dist(data), x),
-                               hang = -1, 
-                               labels = FALSE, 
-                               las = 1,
-                               xlab = "", 
-                               sub = "",
-                               main = paste("Cluster Dendrogram(", x,
-                                            " linkage)"),
-                               cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
-  
-  dev.off()
-}
 
 #apply methods to whole dataset and all features
 #single: not appropriate
