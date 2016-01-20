@@ -1,7 +1,7 @@
 # Group 03
 # Team Members:
 # Christian Siemen (394724)
-#
+# Lucas Stegger (394881)
 #
 #
 
@@ -17,11 +17,15 @@ load("../3-DataPreprocessing.RData")
 #bfeats3, bfeats3.cm_angle, bfeats3.cm_conv, etc. is used, because this is the orig dataset without outliers
 
 #2.1 Principal Component Analysis (PCA)
+section.new("2-1")
 
 #function to draw a scatterplot without regression lines, because 
 #correlation of PCs is 0 from definition
 pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL, 
                                pch=19, legend.pch = 19) {
+  #reset window settings
+  par.reset(main = m)
+  
   #use full window for legend
   par(xpd=TRUE)
   oma = c(4,4,6,6)
@@ -39,6 +43,8 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
   if(legend.title != "no") {
     legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
   }
+  
+  dev.off()
 }
 
 #PCA analyis of the whole dataset
@@ -259,6 +265,7 @@ pairs_noreg.custom(bfeats3.pca_fgroups[1:6], m="Scatterplot on Feature Group-PCs
 #-----------------------------------------------------------------------------------------------------------
 
 #2.2 Multidimensional Scaling
+section.new("2-2")
 
 #application of multidimensional scaling similar to PCA above
 
@@ -477,6 +484,7 @@ scatterplot3d.custom(bfeats3.mds_scale.ela$points[,1], bfeats3.mds_scale.ela$poi
 
 #2.3 Cluster Analysis
 #2.3.1 K-Means Algorithm
+section.new("2-3-1")
 
 #set seed for allow reproduction of results
 set.seed(1906)
@@ -485,6 +493,9 @@ set.seed(1906)
 #for range of number of clusters
 #if required add expected wss of uniform data (only in case data is standardized)
 kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
+  #reset window settings
+  par.reset(main = main)
+  
   n = nrow(data)
   #variables for wss
   wss = rep(0,max_clust)
@@ -501,6 +512,8 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   layout(matrix(1:2, ncol=2))
   plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
   plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
+  
+  dev.off()
 }
 
 
@@ -697,12 +710,14 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2
 #-----------------------------------------------------------------------------------------------------------
 
 #2.3.2 Hierarchical Clustering
-
 section.new("2-3-2")
 
 #custom function for creating dendrograms with agglomerative clustering to the
 #methods defind in the parameter settings
 aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
+  #reset window settings
+  par.reset(main = "Dendrograms")
+  
   #set margin settings and layout
   par(mar = c(0, 5, 4, 2) + 0.1)
   layout(matrix(1:6, ncol=3, byrow=TRUE))
@@ -717,6 +732,8 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
                                main = paste("Cluster Dendrogram(", x,
                                             " linkage)"),
                                cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
+  
+  dev.off()
 }
 
 #apply methods to whole dataset and all features
@@ -819,6 +836,7 @@ save(list = ls(all=TRUE), file="../3-UnsupervisedLearning.RData")
 #-----------------------------------------------------------------------------------------------------------
 
 #2.3.3 Divisive Hierarchical Clustering
+section.new("2-3-3")
 
 require(cluster)
 dv = diana(bfeats3[1:1000,2:18], diss=FALSE, metric="euclidean")
