@@ -5,6 +5,16 @@
 #
 #
 
+#Responsiblity Code:    Alltogether
+#
+#Specific Questions:
+#   1.1 Visualization   Yongsun  Park
+#   1.2, 1.3 Normality  Gino  S.	Colletti
+#   1.4 Outliers        Lucas Stegger
+#   2.1 PCA             Martin Kubicki
+#   2.2 MDS             Christian Siemen
+#   2.3 Cluster         Daniel  Camiola
+
 #Part00 Custom Functions
 #
 #Defines custom functions which are used in Part01 and Part02

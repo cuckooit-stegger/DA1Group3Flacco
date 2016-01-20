@@ -5,6 +5,16 @@
 #
 #
 
+#Responsiblity Code:    Alltogether
+#
+#Specific Questions:
+#   1.1 Visualization   Yongsun  Park
+#   1.2, 1.3 Normality  Gino  S.  Colletti
+#   1.4 Outliers        Lucas Stegger
+#   2.1 PCA             Martin Kubicki
+#   2.2 MDS             Christian Siemen
+#   2.3 Cluster         Daniel  Camiola
+
 #Part02 Unsupervised Learning
 #
 #Uses the preprocessed data from Part01 and analysis the data by applying techniques from the
