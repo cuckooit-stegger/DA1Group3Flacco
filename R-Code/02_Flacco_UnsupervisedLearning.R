@@ -489,6 +489,8 @@ section.new("2-3-1")
 #set seed for allow reproduction of results
 set.seed(1906)
 
+#TODO include expected WSS as in tutorial of 21.01.2016
+
 #custom function for calculating the within-group sum of squares (WSS)
 #for range of number of clusters
 #if required add expected wss of uniform data (only in case data is standardized)
@@ -686,6 +688,43 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3 & bfeats3[,1]==2
               angle=340, main="Clustering using only ELA-Features", xlab="1 PC",
               ylab="2 PC", zlab="3 PC",color=colors[bfeats3.ela_ran.clust2$cluster], cex.lab=1, type="p", pch=19)
 
+
+
+
+#alternative approach would be using low dimension data for kmeans clustering
+#thus we use first 3 PCs of the whole dataset
+#based on these 3 dimensions we execute kmeans clustering
+#scaling PC as well
+kmeans_wss.custom(sweep(bfeats3.pca_cor$scores[,1:3], 2, apply(bfeats3.pca_cor$scores[,1:3], 2,  function(x) diff(range(x))), FUN='/'),
+                  12, main="based on 3 PCs")
+#from the screeplots it could be suggested to have 2 clusters (small elbow)
+#apply
+bfeats3.pca_cor.clust2 = kmeans(sweep(bfeats3.pca_cor$scores[,1:3], 2, 
+                                      apply(bfeats3.pca_cor$scores[,1:3], 2,  function(x) diff(range(x))), FUN='/'),
+                                centers=2, nstart=25)
+
+#clusters are different from first kmeans with all dimension
+#seem to be less appropriate now
+#since clusters by blocks settings not even all block settings distinguished
+pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs (2 clusters from PC)", 
+                   col=colors[bfeats3.pca_cor.clust2$cluster],
+                   legend.title="Cluster", 
+                   legend.text=c("1", "2"), legend.col=colors[1:2])
+#3d
+#using all dimensions clusters topology of landscape -> real function feature
+#using PCs is not appropriate
+layout(matrix(1:2, ncol=2))
+scatterplot3d(bfeats3.pca_cor$scores[,1], 
+              bfeats3.pca_cor$scores[,2],
+              bfeats3.pca_cor$scores[,3],
+              angle=115, main="Clustering using all features", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.clust2$cluster], pch=19, cex.lab=1, type="p")
+scatterplot3d(bfeats3.pca_cor$scores[,1], 
+              bfeats3.pca_cor$scores[,2],
+              bfeats3.pca_cor$scores[,3],
+              angle=115, main="Clustering using 3 PCs", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC",color=colors[bfeats3.pca_cor.clust2$cluster], cex.lab=1, type="p", pch=19)
+
 #outcomes from kmeans-clustering:
 #using all features for clustering whole dataset: 2 / 5 clusters
 #   -2 cluster represent problem landscape
@@ -737,7 +776,10 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
 }
 
 #apply methods to whole dataset and all features
+#single: not appropriate
 #complete: 2 clusters 
+#average: not appropriate
+#centroid: not appropriate
 #ward.D1: 3 clusters -> seems to be good clustering (visualization below)
 #ward.D2: 3 clusters 
 aggl_dend.custom(bfeats3.s[,2:58])
@@ -766,8 +808,7 @@ aggl_dend.custom(bfeats3.s[which(metadata3[,1]==3),2:58])
 bfeats3.block3.aggl.wardD =  hclust(dist(bfeats3.s[which(metadata3[,1]==3),2:58]), method="ward.D")
 bfeats3.block3.aggl.wardD$group = cutree(bfeats3.block3.aggl.wardD, k=2)
 
-#in comparison to kmeans algorithm some more clusters seem to be reasonable for agglomerative clustering
-#this shows up some more clusters than only the topologies from the input parameters
+#same clusters as from kmeans obviously
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1], 
                      bfeats3.pca_cor$scores[which(metadata3[,1]==3),2], 
@@ -792,6 +833,7 @@ bfeats3.block3.fun.aggl.av$group = cutree(bfeats3.block3.fun.aggl.av, k=2)
 
 #visualization
 #agglomerative splits up data differently from kmeans
+#kmeans seems to be more appropriate from visualization
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
               bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
@@ -813,8 +855,7 @@ aggl_dend.custom(bfeats3.s[which(metadata3[,1]==3, bfeats3[,1]==2),19:58])
 bfeats3.block3.ran.aggl.av =  hclust(dist(bfeats3.s[which(metadata3[,1]==3& bfeats3[,1]==2),19:58]), method="ward.D")
 bfeats3.block3.ran.aggl.av$group = cutree(bfeats3.block3.ran.aggl.av, k=2)
 
-#comparison to kmeans shows another number of clusters 
-#and more detailed distinction of clusters
+#comparison to kmeans shows almost equal clusters
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
               bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
@@ -827,11 +868,10 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2)
               angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
               ylab="2 PC", zlab="3 PC", color=colors[bfeats3.ela_ran.clust2$cluster],pch=19)
 
-#findings from agglomerative clustering
-#in comparison to kmeans results do differ for CM- and ELA-features
-#are similar for the whole dataset
-
-save(list = ls(all=TRUE), file="../3-UnsupervisedLearning.RData")
+#findings from hierarchical clustering
+#clusters are often not equal ot kmeans clusters
+#does better show up "optimal" number of clusters by dendrograms
+#kmeans cluster indeed seem to be more appropriate from visualizations perspective
 
 #-----------------------------------------------------------------------------------------------------------
 
@@ -853,5 +893,3 @@ scatterplot3d.custom(bfeats3.pca_cor$scores[1:1000,1], bfeats3.pca_cor$scores[1:
                      angle=75, main="3D Scatterplot on 1., 2., 3. PC (2 clusters)", xlab="1 PC",
                      ylab="2 PC", zlab="3 PC", col=colors[dv$cluster], legend.title="Cluster", 
                      legend.text=c("1", "2"), legend.col=colors[c(1,2)])
-
-#TODO
