@@ -266,6 +266,7 @@ require(scatterplot3d)
 
 #custom function for scatterplot3d including legend on the bottom
 scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, legend.text, legend.col, legend.title) {
+  require(scatterplot3d)
   #reset window settings
   par.reset(main = main)
   layout(rbind(1,2), heights=c(7,1))

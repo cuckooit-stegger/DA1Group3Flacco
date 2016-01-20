@@ -864,20 +864,101 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2)
 
 #2.3.3 Divisive Hierarchical Clustering
 
+#load package
 require(cluster)
-dv = diana(bfeats3[1:1000,2:18], diss=FALSE, metric="euclidean")
-plot(dv)
-dv$cluster = cutree(as.hclust(dv), k=2)
 
+#apply methods to whole dataset and all features
+bfeats3.dv = diana(bfeats3[,2:18], diss=FALSE, metric="euclidean", keep.diss=FALSE)
+#dendrogram shows up 2 clusters
+plot(bfeats3.dv)
+#therefore split data to 3 clusters according to divisive clustering
+bfeats3.dv$cluster = cutree(as.hclust(bfeats3.dv), k=2)
 
-
-pairs_noreg.custom(bfeats3.pca_cor$scores[1:1000,1:6], m="Scatterplot on PCs (2 clusters)", col=colors[dv$cluster],
+#visualization of clusters
+#2 clusters do not represent landscape topology 
+pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs (2 clusters divisive)", 
+                   col=colors[bfeats3.dv$cluster],
                    legend.title="Cluster", 
                    legend.text=c("1", "2"), legend.col=colors[1:2])
-#scatterplot3d shows the same 
-scatterplot3d.custom(bfeats3.pca_cor$scores[1:1000,1], bfeats3.pca_cor$scores[1:1000,2], bfeats3.pca_cor$scores[1:1000,3],
-                     angle=75, main="3D Scatterplot on 1., 2., 3. PC (2 clusters)", xlab="1 PC",
-                     ylab="2 PC", zlab="3 PC", col=colors[dv$cluster], legend.title="Cluster", 
-                     legend.text=c("1", "2"), legend.col=colors[c(1,2)])
+#3d comparison to agglomerative clustering and kmeans
+#kmeans is most appropriate, divisive still more appropriate than agglomerative
+layout(matrix(1:3, ncol=3))
+scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+                     angle=75, main="Agglomerative clustering (2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", color=colors[bfeats3.aggl.wardD$group], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)], pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+                     angle=75, main="Divisive clustering (2 clusters)", xlab="1 PC",
+                     ylab="2 PC", zlab="3 PC", color=colors[bfeats3.dv$cluster], legend.title="Cluster", 
+                     legend.text=c("1", "2"), legend.col=colors[c(1,2)], pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
+              angle=75, main="Kmeans clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.clust2$cluster], legend.title="Cluster", 
+              legend.text=c("1", "2"), legend.col=colors[c(1,2)], pch=19, cex.symbols=1.5)
 
-#TODO
+
+
+#apply methods to one block setting + funnel topology problems and only CM-features
+#as we know from 2.3.1 that CM-Features can split up these instances quite well
+bfeats3.block3.fun.dv = diana(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18], diss=FALSE, 
+                              metric="euclidean", keep.diss=FALSE)
+#dendrogram shows up 2 clusters
+plot(bfeats3.block3.fun.dv)
+#therefore split data to 3 clusters according to divisive clustering
+bfeats3.block3.fun.dv$cluster = cutree(as.hclust(bfeats3.block3.fun.dv), k=2)
+
+#comparison to kmeans and agglomerative
+#divisive seems to be most appropriate from visualization perspective
+layout(matrix(1:3, ncol=3))
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+              angle=80, main="Agglomerative Clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.fun.aggl.av$group],pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+              angle=80, main="Divisive Clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.fun.dv$cluster],pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),1], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),2], 
+              bfeats3.pca_cor.cm$scores[which(metadata3[,1]==3& bfeats3[,1]==1),3],
+              angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.top_fun.clust2$cluster],pch=19, cex.symbols=1.5)
+
+
+
+
+#apply methods to one block setting + random and only ELA-features
+#see 2.2 ELA features can split up random landscapes
+bfeats3.block3.ran.dv = diana(bfeats3[which(metadata3[,1]==3 & bfeats3[,1]==2),19:58], diss=FALSE, 
+                   metric="euclidean", keep.diss=FALSE)
+#dendrogram shows up 2 clusters
+plot(bfeats3.block3.ran.dv)
+#therefore split data to 3 clusters according to divisive clustering
+bfeats3.block3.ran.dv$cluster = cutree(as.hclust(bfeats3.block3.ran.dv$cluster), k=2)
+
+#comparison to kmeans and agglomerative
+#divisive not appropriate at all
+layout(matrix(1:3, ncol=3))
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+              angle=80, main="Agglomerative Clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.ran.aggl.av$group],pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+              angle=80, main="Divisive Clustering (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.block3.ran.dv$cluster],pch=19, cex.symbols=1.5)
+scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),1], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),2], 
+              bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2),3],
+              angle=80, main="KMeans Algorithm (2 clusters)", xlab="1 PC",
+              ylab="2 PC", zlab="3 PC", color=colors[bfeats3.ela_ran.clust2$cluster],pch=19, cex.symbols=1.5)
+
+#findings from divisive hierarchical clustering:
+#in most cases not appropriate due to distribution of data
+#for CM-Features and funnel topology appropriate indeed
+
+# ----------------------------------------------------------------------------------------------------------------
