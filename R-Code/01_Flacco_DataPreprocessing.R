@@ -2,7 +2,7 @@
 # Team Members
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
-#
+# Yongsun Park (425844)
 #
 
 #Responsiblity Code:    Alltogether
