@@ -51,6 +51,9 @@ bfeats = afeats[,-var0feats]
 #convert categorical var "topology" into numerical equivalent
 bfeats[,1] = as.integer(factor(bfeats[,1], labels=c(0,1)))
 
+#set rownames accoring to rownumber
+attributes(bfeats)$row.names = as.character(1:nrow(bfeats))
+
 #result is a dataset of 58 expensive features based on the flacco dataset which is used for further tasks
 #feature groups (used for detailed inter-group / intra-group analysis)
 bfeats.topology = bfeats[,1]
@@ -182,8 +185,8 @@ scatterplot3d.custom(bfeats.ela_curv[,3], bfeats.ela_curv[,10], bfeats.ela_curv[
 
 #also between ELA features there are some dependencies. clusters dependent on topology of function
 scatterplot3d.custom(bfeats.ela_conv[,1], bfeats.ela_curv[,3], bfeats.ela_local[,3],
-                     angle=35, main="3D Scatterplot between features within ela features (by topology)", xlab="ela_conv.runtime", ylab="ela_curv.runtime", 
-                     zlab="ela_local.runtime", col=colors[bfeats.topology], legend.title="Topology", 
+                     angle=35, main="3D Scatterplot between features within ela features (by topology)", xlab="ela_conv.conv_prob", ylab="ela_curv.grad_norm.mean", 
+                     zlab="ela_local.basin_sizes.avg_best", col=colors[bfeats.topology], legend.title="Topology", 
                      legend.text=c("funnel", "random"), legend.col=colors[1:2])
 
 

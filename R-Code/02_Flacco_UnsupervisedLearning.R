@@ -117,7 +117,7 @@ scatterplot3d.custom(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfe
                      ylab="2 PC", zlab="3 PC", col=colors[bfeats3[,1]], legend.title="Topology", 
                      legend.text=c("funnel", "random"), legend.col=colors[c(1,2)])
 
-
+## (----------)
 
 #based on the idea that CM and ELA are features of two different method 
 #it would be a good start to do a PCA separately on each method features
@@ -256,7 +256,7 @@ section.new("2-2")
 #application of multidimensional scaling similar to PCA above
 
 #methodology implemented
-#parameters are distance matrix and number of dimensions needed
+#parameters are distance matrix and number of dimensions
 mds.custom <- function(dist_mat, dim) {
   #calculate A from distance matrix
   A = -0.5*as.matrix(dist_mat)^2
@@ -265,10 +265,11 @@ mds.custom <- function(dist_mat, dim) {
   #calculate eigenvalues
   eg = eigen(B)
   X = NULL
-  #concatenate eigenvectors and variances
+  #concatenate eigenvectors after transformationn by sqrt of eigenvalues
   for(i in 1:dim) {
     X = cbind(X, eg$vectors[,i] * sqrt(eg$values[i]))
   }
+  #return dataframe of eigenvectors and eigenvalues
   data.frame(eig=eg, points=X)
 }
 
@@ -308,25 +309,25 @@ pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS")
 #the result is the same as the PCA scatterplot (besides rotation)
 #again we can identify influence of some metadat
 #blocks
-pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS", col=colors[metadata3[,1]],
+pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS (num blocks)", col=colors[metadata3[,1]],
                    legend.title="Number of blocks", 
                    legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
 #num peaks does not have influence on clusters
-pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on PCs", col=colors[metadata3[,4]/20],
+pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS (num peaks)", col=colors[metadata3[,4]/20],
                    legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
                    "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"),
                    legend.col=colors[1:10])
 #prob.seed does not have influence on clusters
-pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on PCs", col=colors[metadata[,5]], 
+pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS (prob.seed)", col=colors[metadata[,5]], 
                    legend.title = "Prob.seed", legend.text = c("1", "2", "3", 
                                                                "4", "5"),legend.col=colors[1:5])
 #repl does not have influence on clusters
-pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on PCs", col=colors[metadata[,6]],
+pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS (repl)", col=colors[metadata[,6]],
                    legend.title = "Repl", legend.text = c("1", "2", "3", 
                                                           "4", "5", "6", "7", "8","9", "10"),
                    legend.col=colors[1:10])
 #topology seems to have influence. so that will be important parameter of the function
-pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on PCs", col=colors[bfeats3[,1]],
+pairs_noreg.custom(bfeats3.mds_scale$points[,1:6], m="Scatterplot on MDS (topology)", col=colors[bfeats3[,1]],
                    legend.title = "Topology", legend.text = c("funnel", "random"),
                    legend.col=colors[1:10])
 
@@ -343,36 +344,37 @@ scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pc
 #influence of blocks
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.mds_scale$points[,1], bfeats3.mds_scale$points[,2], bfeats3.mds_scale$points[,3],
-              angle=75, main="3D Scatterplot on MDS (3 dim)", xlab="1 dim",
+              angle=75, main="3D Scatterplot on MDS (num blocks)", xlab="1 dim",
               ylab="2 dim", zlab="3 dim", color=colors[metadata3[,1]], pch=19, cex.lab=1, type="p")
 scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
-              angle=75, main="3D Scatterplot on 1., 2., 3. PC", xlab="1 PC",
+              angle=75, main="3D Scatterplot on PCs (num blocks)", xlab="1 PC",
               ylab="2 PC", zlab="3 PC",color=colors[metadata3[,1]], cex.lab=1, type="p", pch=19)
 #influence of topology
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.mds_scale$points[,1], bfeats3.mds_scale$points[,2], bfeats3.mds_scale$points[,3],
-              angle=75, main="3D Scatterplot on MDS (3 dim)", xlab="1 dim",
+              angle=75, main="3D Scatterplot on MDS (topology)", xlab="1 dim",
               ylab="2 dim", zlab="3 dim", color=colors[bfeats3[,1]], pch=19, cex.lab=1, type="p")
 scatterplot3d(bfeats3.pca_cor$scores[,1], bfeats3.pca_cor$scores[,2], bfeats3.pca_cor$scores[,3],
-              angle=75, main="3D Scatterplot on 1., 2., 3. PC", xlab="1 PC",
+              angle=75, main="3D Scatterplot on PCs (topology)", xlab="1 PC",
               ylab="2 PC", zlab="3 PC",color=colors[bfeats3[,1]], cex.lab=1, type="p", pch=19)
 
 
+## (----------------)
 
 #use of custom mds function and comparison to built-in one
 bfeats3.mds_custom = mds.custom(bfeats3.dist_scale, 20)
 #same result as for built in-function
 cumsum(bfeats3.mds_custom[1:20,1])/sum(bfeats3.mds_custom[1:20,1])
-plot(bfeats3.mds_custom[1:20,1], type="b", main="Scree diagram MDS (elbow)", xlab="Component number", ylab="Component value")
+plot(bfeats3.mds_custom[1:20,1], type="b", main="Scree diagram method-MDS (elbow)", xlab="Component number", ylab="Component value")
 points(6, bfeats3.mds_custom[6,1], col="red", cex=2.5, lwd=1.5, pch=1)
 
 #comparison built-in and custom function for MDS
 layout(matrix(1:2, ncol=2))
 scatterplot3d(bfeats3.mds_scale$points[,1], bfeats3.mds_scale$points[,2], bfeats3.mds_scale$points[,3],
-              angle=75, main="3D Scatterplot on MDS (3 dim) built-in", xlab="1 dim",
+              angle=75, main="3D Scatterplot on MDS built-in", xlab="1 dim",
               ylab="2 dim", zlab="3 dim", color=colors[bfeats3[,1]], pch=19, cex.lab=1, type="p")
 scatterplot3d(bfeats3.mds_custom[,2], bfeats3.mds_custom[,3], bfeats3.mds_custom[,4],
-              angle=75, main="3D Scatterplot on MDS (3 dim) custom", xlab="1 dim",
+              angle=75, main="3D Scatterplot on MDS custom", xlab="1 dim",
               ylab="2 dim", zlab="3 dim",color=colors[bfeats3[,1]], cex.lab=1, type="p", pch=19)
 #therefore we will go on using the results from built-in function as they are the same
 
@@ -393,38 +395,38 @@ cumsum(bfeats3.mds_scale.cm$eig[1:20])/sum(bfeats3.mds_scale.cm$eig[1:20])
 #plot scree diagram
 #for deciding on appropriate number of dimensions
 plot(bfeats3.mds_scale.cm$eig[1:20], type="b", main="Scree diagram CM-MDS", xlab="Component number", ylab="Component value")
-#the scree diagram shows up a kink after dimension 5. So we consider that to be an appropriate number of dimensions
+#the scree diagram shows up a kink after dimension 6. So we consider that to be an appropriate number of dimensions
 #they result in explaining about 71% of overall variance and are still practical for analysis
 plot(bfeats3.mds_scale.cm$eig[1:20], type="b", main="Scree diagram CM-MDS (elbow)", xlab="Component number", ylab="Component value")
-points(5, bfeats3.mds_scale.cm$eig[5], col="red", cex=2.5, lwd=1.5, pch=1)
+points(6, bfeats3.mds_scale.cm$eig[6], col="red", cex=2.5, lwd=1.5, pch=1)
 
 #visualization of CM-MDS
 #scatterplot
-pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:5], m="Scatterplot on CM-MDS")
+pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:6], m="Scatterplot on CM-MDS")
 #actually again we can  see that there are some clusters 
 #strong influence of blocks on CM-Features
-pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:5], m="Scatterplot on CM-MDS", col=colors[metadata3[,1]],
+pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:6], m="Scatterplot on CM-MDS (num blocks)", col=colors[metadata3[,1]],
                    legend.title="Number of blocks", 
                    legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
 #influence of topology
-pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:5], m="Scatterplot on CM-MDS", col=colors[bfeats3[,1]],
+pairs_noreg.custom(bfeats3.mds_scale.cm$points[,1:6], m="Scatterplot on CM-MDS (topology)", col=colors[bfeats3[,1]],
                    legend.title = "Topology", legend.text = c("funnel", "random"),
                    legend.col=colors[1:10])
 
 #scatterplot3d of first 3 CM-dimensions
 require(scatterplot3d)
 scatterplot3d.custom(bfeats3.mds_scale.cm$points[,1], bfeats3.mds_scale.cm$points[,2], bfeats3.mds_scale.cm$points[,3],
-                     angle=75, main="3D Scatterplot on 1., 2., 3. CM-dimensions", xlab="1 dim",
+                     angle=75, main="3D Scatterplot on CM-dimensions", xlab="1 dim",
                      ylab="2 dim", zlab="3 dim",col=colors[1], legend.title="no", legend.col=NULL, legend.text=NULL)
 #again influence of blocks visible
 scatterplot3d.custom(bfeats3.mds_scale.cm$points[,1], bfeats3.mds_scale.cm$points[,2], bfeats3.mds_scale.cm$points[,3],
-                     angle=75, main="3D Scatterplot on 1., 2., 3. CM-dimensions", xlab="1 dim",
+                     angle=75, main="3D Scatterplot on CM-dimensions (num blocks)", xlab="1 dim",
                      ylab="2 dim", zlab="3 dim", col=colors[metadata3[,1]], legend.title="Number of blocks", 
                      legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
 #and again influence of topology as important parameter since it is "real" feature of function
 #and not of evaluation process as num blocks
 scatterplot3d.custom(bfeats3.mds_scale.cm$points[,1], bfeats3.mds_scale.cm$points[,2], bfeats3.mds_scale.cm$points[,3],
-                     angle=75, main="3D Scatterplot on 1., 2., 3. CM-dimensions", xlab="1 dim",
+                     angle=75, main="3D Scatterplot on CM-dimensions (topology)", xlab="1 dim",
                      ylab="2 dim", zlab="3 dim", col=colors[bfeats3[,1]], legend.title="Topology", 
                      legend.text=c("funnel", "random"), legend.col=colors[c(1,2)])
 
@@ -451,20 +453,47 @@ points(5, bfeats3.mds_scale.ela$eig[5], col="red", cex=2.5, lwd=1.5, pch=1)
 #scatterplot
 pairs_noreg.custom(bfeats3.mds_scale.ela$points[,1:5], m="Scatterplot on ELA-MDS")
 #influence of topology
-pairs_noreg.custom(bfeats3.mds_scale.ela$points[,1:5], m="Scatterplot on ELA-MDS", col=colors[bfeats3[,1]],
+pairs_noreg.custom(bfeats3.mds_scale.ela$points[,1:5], m="Scatterplot on ELA-MDS (topology)", col=colors[bfeats3[,1]],
                    legend.title = "Topology", legend.text = c("funnel", "random"),
                    legend.col=colors[1:10])
 
 #scatterplot3d of first 3 ELA-dimensions
 require(scatterplot3d)
 scatterplot3d.custom(bfeats3.mds_scale.ela$points[,1], bfeats3.mds_scale.ela$points[,2], bfeats3.mds_scale.ela$points[,3],
-                     angle=135, main="3D Scatterplot on 1., 2., 3. ELA-dimensions", xlab="1 dim",
+                     angle=135, main="3D Scatterplot on ELA-dimensions", xlab="1 dim",
                      ylab="2 dim", zlab="3 dim",col=colors[1], legend.title="no", legend.col=NULL, legend.text=NULL)
 #influence of topology again
 scatterplot3d.custom(bfeats3.mds_scale.ela$points[,1], bfeats3.mds_scale.ela$points[,2], bfeats3.mds_scale.ela$points[,3],
-                     angle=135, main="3D Scatterplot on 1., 2., 3. ELA-dimensions", xlab="1 dim",
+                     angle=135, main="3D Scatterplot on ELA-dimensions (topology)", xlab="1 dim",
                      ylab="2 dim", zlab="3 dim", col=colors[bfeats3[,1]], legend.title="Topology", 
                      legend.text=c("funnel", "random"), legend.col=colors[c(1,2)])
+
+
+
+#Finally an analysis with including first dimension of MDS of each feature group
+bfeats3.mds_fgroups = data.frame(
+  cmdscale(dist(as.data.frame(apply(bfeats3.cm_angle, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1],
+  cmdscale(dist(as.data.frame(apply(bfeats3.cm_conv, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1],
+  cmdscale(dist(as.data.frame(apply(bfeats3.cm_grad, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1],
+  cmdscale(dist(as.data.frame(apply(bfeats3.ela_conv, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1],
+  cmdscale(dist(as.data.frame(apply(bfeats3.ela_curv, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1],
+  cmdscale(dist(as.data.frame(apply(bfeats3.ela_local, 2, scale)))
+           , k = 1, eig=TRUE, add = FALSE, x.ret = FALSE)$points[,1])
+#column names
+colnames(bfeats3.mds_fgroups) <- c("cm_angle", "cm_conv", "cm_curv", "ela_conv", "ela_curv", "ela_local")
+
+#visualiztion of Feature Group MDS dimensions
+#scatterplot
+pairs_noreg.custom(bfeats3.mds_fgroups[1:6], m="Scatterplot on Feature Group-MDS")
+#influence of topology
+pairs_noreg.custom(bfeats3.mds_fgroups[1:6], m="Scatterplot on Feature Group-MDS", col=colors[bfeats3[,1]],
+                   legend.title = "Topology", legend.text = c("funnel", "random"),
+                   legend.col=colors[1:10])
 
 #-----------------------------------------------------------------------------------------------------------
 

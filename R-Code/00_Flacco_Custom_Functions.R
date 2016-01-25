@@ -36,7 +36,7 @@ debug.msg = function(s) {
 par.defaults = par(no.readonly = T)
 
 #write plots to pdf?
-pdf.create = T
+pdf.create = F
 
 #pdf file settings
 pdf.path = "../plots/"
@@ -128,7 +128,9 @@ pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=N
     legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
   }
   
-  dev.off()
+  if(pdf.create == T) {
+    dev.off()
+  }
 }
 
 #function for determining the amount of pairwise correlation (pearson) within a certain dataset
@@ -164,7 +166,7 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   layout(matrix(1, ncol=1))
   par(mar=c(8,5,5,5))
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -205,7 +207,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
   #view histogram and p-value of SW-Test
   hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -239,7 +241,7 @@ normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
          which(attributes(data)$row.names == names(out)),cex=1,col="blue")
   }
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -277,7 +279,7 @@ boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], ro
   #insert "optimal" line
   qqline(after_data,lwd=2,col="red")
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 #custom function to plot dotplots of the different feature sets
@@ -288,7 +290,7 @@ dotplot.custom <- function(x, title) {
   #dotplot
   stripchart(x,method="stack",pch=1,main=title)
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -305,7 +307,7 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
     #include correlation coefficients in upper panel and histograms on diagonal
   }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -337,7 +339,7 @@ outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
     points(qc[out], sd[out], col="red", pch=1, cex=2)
   }
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -377,7 +379,7 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
     legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
   }
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -407,7 +409,7 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
   plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -432,7 +434,7 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
                                        " linkage)"),
                           cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
   
-  dev.off()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 #save functions in file for loading them in Part01 and Part02
