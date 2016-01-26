@@ -40,16 +40,16 @@ bfeats3.pca_cov = princomp(bfeats3[,-1], cor=FALSE)
 #only 2 PCs needed for explaining 80% of variance
 summary(bfeats3.pca_cov)
 biplot(bfeats3.pca_cov, main="Biplot of PCA based on cov")
-#analysing these PC it can be seen that due to the large scale of some features
-#these PC do rely on a very small number of features
+#analysing these PC it can be seen that these PC rely on a very small number of features
+#In fact the large scale of some features speaks against using the covariance matrix as their basis
 #1.PC : ela_curv.grad_scale.max & ela_curv.hessian_cond.max  
 #2.PC : ela_curv.grad_scale.max & ela_curv.hessian_cond.max & ela_local.costs_fun_evals
 #thus the do not represent the dataset properly
 round(summary(bfeats3.pca_cov, loadings = TRUE)$loadings[,1:2], 3)
 
-#therefore the PCA should be based on the correlation matrix instead
-#feat 49 has to be excluded as well since its variance is to low resulting in a non non-definite cor matrix
-#(exclude topology since it is input parameter)
+#Therefore the PCA should be based on the correlation matrix instead
+#Feat 49 (ela_local.basin_sizes.avg_non_best) has to be excluded as well since its variance is too low resulting in a non non-definite cor matrix
+#(exclude topology (feat 1) since it is input parameter)
 bfeats3.pca_cor = princomp(bfeats3[,-c(1,49)], cor=TRUE, scores=TRUE)
 #examine resulting PCs
 #11 PCs needed for explaining 80 % of overall variance
