@@ -66,23 +66,25 @@ which(eigen(cov(bfeats))$values<0)
 #Hence we search for features in bfeats3 with particularly small variances 
 #to see if eliminating them stepwise will fix the issue
 sort(apply(bfeats3[,-c(1)], 2, var), decreasing=FALSE)
-#Exclusion of the feature with the smallest variance (feat 49: ela_local.basin_sizes.avg_non_best) 
-#already leads to a successful PCA
+match(names(sort(apply(bfeats3[,-c(1)], 2, var), decreasing=FALSE)), names(bfeats3))
+#feat 49: ela_local.basin_sizes.avg_non_best has the smalles variance, which is near-zero
+var(bfeats3[,49])
+#Exclusion of feat 49 already leads to a successful PCA
 bfeats3.pca_cor = princomp(bfeats3[,-c(1,49)], cor=TRUE, scores=TRUE)
 
 #examine resulting PCs
-#11 PCs are required to explain 80% of overall variance
+#11 PCs are required to explain 80% of overall variance and 17 PCs for 90%.
+#This number of PCs is too unpractical for analysis
 summary(bfeats3.pca_cor)
-#plot scree diagram
-#for deciding on appropriate number of PCs
+#plot scree diagram for deciding on appropriate number of PCs
 plot(bfeats3.pca_cor$sdev, type="b", main="Scree diagram PCA on cor", xlab="Component number", ylab="Component variance")
-#the scree diagram shows up a kink after PCs 6. So we consider that to be an appropriate number of PCs
-#they result in explaining about 68% of overall variance and are still practical for analysis
+#the scree diagram shows a kink after 6 PCs which explain about 68% of overall variance
+#These 6 PCs shall be the basis for further considerations
 plot(bfeats3.pca_cor$sdev, type="b", main="Scree diagram PCA on cor (elbow)", xlab="Component number", ylab="Component variance")
 points(6, bfeats3.pca_cor$sdev[6], col="red", cex=2.5, lwd=1.5, pch=1)
 #biplot
 biplot(bfeats3.pca_cor, main="Biplot of PCA based on cor")
-#show factors of components
+#show loadings of components
 round(summary(bfeats3.pca_cor, loadings = TRUE)$loadings[,1:6], 3)
 
 #visualization of the 6 identified PCs
