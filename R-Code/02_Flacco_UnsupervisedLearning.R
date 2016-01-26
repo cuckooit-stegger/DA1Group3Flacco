@@ -87,26 +87,35 @@ biplot(bfeats3.pca_cor, main="Biplot of PCA based on cor")
 #show loadings of components
 round(summary(bfeats3.pca_cor, loadings = TRUE)$loadings[,1:6], 3)
 
-#visualization of the 6 identified PCs
-#scatterplot
+#2.1.3 Visualization of the 6 identified PCs
+
+#scatterplot of PCs
+#some clusters can already be identified through visual inspection
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs")
-#actually we can already see that there are some clusters 
-#to ensure that these are not from the different metadata setting only 
-#including metadata into the scatterplot
-#dim and n.dim do not vary
-#blocks
+
+#Visual cluster analysis
+#to ensure that the visible are not simply a result of different metadata settings,
+#we examine the impact of the number of blocks on the datapoints (dim and n.dim do not vary by block number)
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata3[,1]],
                    legend.title="Number of blocks", 
                    legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
-#from the color appearance we see that the clusters depend on the metadata argument num of blocks
-#so we have to be careful when doing cluster analysis
-#but when only including data with block == 3 in plot, other clusters are still there
+#from the colors we see that the clusters in scatterplots where PC2 is involved
+#depend on the metadata argument num of blocks
+#but when filtering for data e.g. with block == 3 only in plot, other clusters can still be seen
 pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs")
-#num peaks does not have influence on clusters
+
+#num peaks has no visible influence on clusters
+#for all blocks
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata3[,4]/20],
                    legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
                    "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"),
                    legend.col=colors[1:10])
+#filtered for block == 3
+pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs", col=colors[metadata3[,4]/20],
+                   legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks",
+                   "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"),
+                   legend.col=colors[1:10])
+
 #prob.seed does not have influence on clusters
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata[,5]], 
                    legend.title = "Prob.seed", legend.text = c("1", "2", "3", 
