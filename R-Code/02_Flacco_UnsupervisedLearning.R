@@ -34,25 +34,44 @@ load("../3-DataPreprocessing.RData")
 section.new("2-1")
 
 #PCA analyis of the whole dataset
-#first based on covariance matrix (exclude topology since it is input parameter)
+
+#2.1.1 PCA based on covariance matrix
+#perform PCA based on covariance matrix (exclude topology which is an input parameter)
 bfeats3.pca_cov = princomp(bfeats3[,-1], cor=FALSE)
 #examine reulting PCs
-#only 2 PCs needed for explaining 80% of variance
+#here only 2 PCs are needed to explain 80% of variance
 summary(bfeats3.pca_cov)
 biplot(bfeats3.pca_cov, main="Biplot of PCA based on cov")
-#analysing these PC it can be seen that these PC rely on a very small number of features
-#In fact the large scale of some features speaks against using the covariance matrix as their basis
-#1.PC : ela_curv.grad_scale.max & ela_curv.hessian_cond.max  
+#the analysis of these PC reveals that they rely on a very small number of features
+#1.PC : ela_curv.grad_scale.max & ela_curv.hessian_cond.max
 #2.PC : ela_curv.grad_scale.max & ela_curv.hessian_cond.max & ela_local.costs_fun_evals
 #thus the do not represent the dataset properly
 round(summary(bfeats3.pca_cov, loadings = TRUE)$loadings[,1:2], 3)
 
+#In fact the large variations in scale of some features relative to others
+#speaks against using the covariance matrix as the basis for the PCA
+range(bfeats3)
+
+#2.1.2 PCA based on correlation matrix
 #Therefore the PCA should be based on the correlation matrix instead
-#Feat 49 (ela_local.basin_sizes.avg_non_best) has to be excluded as well since its variance is too low resulting in a non non-definite cor matrix
-#(exclude topology (feat 1) since it is input parameter)
+#applying the following command, R reports an error due to the underlying covariance matrix 
+#not being positive-semidefinite ("covariance matrix is not non-negative definite")
+princomp(bfeats3[,-c(1)], cor=TRUE, scores=TRUE)
+
+#Correlation and covariance matrices are generally positive semidefinite 
+#and should therefore have non-negative eigenvalues
+#None of the eigenvalues here are negative, though
+which(eigen(cor(bfeats))$values<0)
+which(eigen(cov(bfeats))$values<0)
+#Hence we search for features in bfeats3 with particularly small variances 
+#to see if eliminating them stepwise will fix the issue
+sort(apply(bfeats3[,-c(1)], 2, var), decreasing=FALSE)
+#Exclusion of the feature with the smallest variance (feat 49: ela_local.basin_sizes.avg_non_best) 
+#already leads to a successful PCA
 bfeats3.pca_cor = princomp(bfeats3[,-c(1,49)], cor=TRUE, scores=TRUE)
+
 #examine resulting PCs
-#11 PCs needed for explaining 80 % of overall variance
+#11 PCs are required to explain 80% of overall variance
 summary(bfeats3.pca_cor)
 #plot scree diagram
 #for deciding on appropriate number of PCs
