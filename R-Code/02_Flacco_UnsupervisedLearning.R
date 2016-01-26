@@ -52,6 +52,7 @@ round(summary(bfeats3.pca_cov, loadings = TRUE)$loadings[,1:2], 3)
 #speaks against using the covariance matrix as the basis for the PCA
 range(bfeats3)
 
+
 #2.1.2 PCA based on correlation matrix
 #Therefore the PCA should be based on the correlation matrix instead
 #applying the following command, R reports an error due to the underlying covariance matrix 
@@ -87,6 +88,7 @@ biplot(bfeats3.pca_cor, main="Biplot of PCA based on cor")
 #show loadings of components
 round(summary(bfeats3.pca_cor, loadings = TRUE)$loadings[,1:6], 3)
 
+
 #2.1.3 Visualization of the 6 identified PCs
 
 #scatterplot of PCs
@@ -94,17 +96,19 @@ round(summary(bfeats3.pca_cor, loadings = TRUE)$loadings[,1:6], 3)
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs")
 
 #Visual cluster analysis
-#to ensure that the visible are not simply a result of different metadata settings,
+#to ensure that the visible clusters are not simply a result of different metadata settings,
+#we analyse the influence the metadata may have on the clusters
+
 #we examine the impact of the number of blocks on the datapoints (dim and n.dim do not vary by block number)
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata3[,1]],
                    legend.title="Number of blocks", 
                    legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
 #from the colors we see that the clusters in scatterplots where PC2 is involved
-#depend on the metadata argument num of blocks
-#but when filtering for data e.g. with block == 3 only in plot, other clusters can still be seen
+#depend on the metadata argument "blocks"
+#but when filtering for data e.g. with block == 3 only in plot, other clusters remain
 pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs")
 
-#num peaks has no visible influence on clusters
+#"peaks" has no visible influence on clusters
 #for all blocks
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata3[,4]/20],
                    legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
@@ -116,16 +120,18 @@ pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatt
                    "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"),
                    legend.col=colors[1:10])
 
-#prob.seed does not have influence on clusters
+#"prob.seed" has no visible influence on clusters
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata[,5]], 
                    legend.title = "Prob.seed", legend.text = c("1", "2", "3", 
                   "4", "5"),legend.col=colors[1:5])
-#repl does not have influence on clusters
+
+#"repl" has no visible influence on clusters
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[metadata[,6]],
                    legend.title = "Repl", legend.text = c("1", "2", "3", 
                    "4", "5", "6", "7", "8","9", "10"),
                    legend.col=colors[1:10])
-#topology seems to have influence. so that will be important parameter of the function
+
+#"topology" seems to have influence. so that will be important parameter of the function
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=colors[bfeats3[,1]],
                    legend.title = "Topology", legend.text = c("funnel", "random"),
                    legend.col=colors[1:10])
