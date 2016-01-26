@@ -22,7 +22,7 @@
 #-------------------------------------------------------------------------------------------------------
 #0.0 General settings
 #debug?
-debug = T
+debug = F
 
 #method to print debug messages, if debug is true
 debug.msg = function(s) {
