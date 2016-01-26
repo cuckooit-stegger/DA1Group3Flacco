@@ -277,7 +277,11 @@ colnames(bfeats3.pca_fgroups) <- c("cm_angle", "cm_conv", "cm_curv", "ela_conv",
 #visualiztion of Feature Group PCA
 #scatterplot
 pairs_noreg.custom(bfeats3.pca_fgroups[1:6], m="Scatterplot on Feature Group-PCs")
-#topology has a clear influence on clusters
+#"blocks" determine clusters
+pairs_noreg.custom(bfeats3.pca_fgroups[1:6], m="Scatterplot on Feature Group-PCs", col=colors[metadata3[,1]],
+                   legend.title="Number of blocks", 
+                   legend.text=c("3 blocks", "5 blocks", "7 blocks"), legend.col=colors[c(3,5,7)])
+#"topology" also has a clear influence on clusters
 pairs_noreg.custom(bfeats3.pca_fgroups[1:6], m="Scatterplot on Feature Group-PCs", col=colors[bfeats3[,1]],
                    legend.title = "Topology", legend.text = c("funnel", "random"),
                    legend.col=colors[1:10])
