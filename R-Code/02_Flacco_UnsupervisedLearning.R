@@ -92,7 +92,7 @@ round(summary(bfeats3.pca_cor, loadings = TRUE)$loadings[,1:6], 3)
 #2.1.3 Visualization of the 6 identified PCs
 
 #scatterplot of PCs
-#some clusters can already be identified through visual inspection
+#some clusters can already be identified by visual inspection
 pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs")
 
 #Visual cluster analysis
@@ -106,7 +106,7 @@ pairs_noreg.custom(bfeats3.pca_cor$scores[,1:6], m="Scatterplot on PCs", col=col
 #from the colors we see that the clusters in scatterplots where PC2 is involved
 #depend on the metadata argument "blocks"
 #but when filtering for data e.g. with block == 3 only in plot, other clusters remain
-pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs")
+pairs_noreg.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6], m="Scatterplot on PCs", col=colors[3])
 
 #"peaks" has no visible influence on clusters
 #for all blocks
