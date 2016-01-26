@@ -46,7 +46,7 @@ metadata = feats[,c(seq(1,5),7)]
 #cm_angle.costs_fun_evals, cm_conv.costs_fun_evals, cm_grad.costs_fun_evals, ela_conv.lin_prob,
 #ela_conv.costs_fun_evals, ela_curv.sample_size, ela_local.n_loc_opt.abs, ela_local.n_loc_opt.rel
 var0feats = which(sapply(1:length(afeats), function(x) {var(afeats[,x])}) == 0)
-bfeats = afeats[,-var0featss]
+bfeats = afeats[,-var0feats]
 
 #convert categorical var "topology" into numerical equivalent
 bfeats[,1] = as.integer(factor(bfeats[,1], labels=c(0,1)))
@@ -258,7 +258,7 @@ section.new("1-2")
 #apply the normality tests to single features of the dataset (in groups of 5 for displaying issues)
 #it can be seen that assuming a significance niveau of 0.01 for each of the features
 #the hypothesis of a normal distribution would be rejected
-layout(matrix(1:10, ncol=5,nrow=2))
+layout.custom(matrix(1:10, ncol=5,nrow=2), main = "Tests for normality (single features)", plotbreak = 5)
 #1-5: p-value close to zero
 mapply(normal.custom, x=bfeats[,1:5], title=colnames(bfeats)[1:5])
 #6-10: p-value close to zero
@@ -283,6 +283,8 @@ mapply(normal.custom, x=bfeats[,46:50], title=colnames(bfeats)[46:50])
 mapply(normal.custom, x=bfeats[,51:55], title=colnames(bfeats)[51:55])
 #56-59: p-value close to zero
 mapply(normal.custom, x=bfeats[,56:59], title=colnames(bfeats)[56:59])
+#manually close device as last plot only contains 8 instead of 10 plots
+if(pdf.create == T) dev.off()
 
 #deeper analysis of p-values of SW-Tests for single features
 #all of the tests are rejected with sig niv of 0.01
@@ -294,7 +296,7 @@ which(bfeats.sw_pvalue > 0.01)
 #also whan applying the tests to the PC of the feature groups (see 1.1 Visualization)
 #the hypothesis of normal distribution must be rejected for each
 #nevertheless the CM seem to be closer to normal distributrion by looking on the graphs
-layout(matrix(1:6, ncol=3, nrow=2))
+layout.custom(matrix(1:6, ncol=3, nrow=2), main = "Tests for normality (PC of groups)", plotbreak = 3)
 mapply(normal.custom, x=princomp_feat_groups[,2:4], title=colnames(princomp_feat_groups)[2:4])
 mapply(normal.custom, x=princomp_feat_groups[,5:7], title=colnames(princomp_feat_groups)[5:7])
 
@@ -314,7 +316,7 @@ mapply(normal.custom, x=princomp_feat_groups[,5:7], title=colnames(princomp_feat
 
 #Analyze the subset(blocks = 3, repl = 1) of the dataset wrt to normality
 #it can be seen that most of the features are closer to being normally distributed as the SW-test and the graphs show
-layout(matrix(1:10, ncol=5,nrow=2))
+layout.custom(matrix(1:10, ncol=5,nrow=2), main = "Tests for normality (single features - subset blocks = 3 & repl = 1)", plotbreak = 5)
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),1:5], title=colnames(bfeats)[1:5])
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),6:10], title=colnames(bfeats)[6:10])
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),11:15], title=colnames(bfeats)[11:15])
@@ -327,6 +329,8 @@ mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),41:45], 
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),46:49], title=colnames(bfeats)[46:49])
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),51:55], title=colnames(bfeats)[51:55])
 mapply(normal.custom, x=bfeats[which(metadata[,6]==1 & metadata[,1]==3),56:59], title=colnames(bfeats)[56:59])
+#manually close device as last plot only contains 8 instead of 10 plots
+if(pdf.create == T) dev.off()
 
 #also when taking a closer look at the average SW-test pvalues, they do increase significantly 
 #contrary to looking at the whole dataset
@@ -357,10 +361,12 @@ bfeats.sw_pvalue.subgroups[which(bfeats.sw_pvalue.subgroups > 0.01)]
 
 #also when looking onto the PC of the feature groups the pvalues do increase when looking on the subset separately
 #example for repl=1 and blocks=3:
-layout(matrix(1:6, ncol=3, nrow=2))
+layout.custom(matrix(1:6, ncol=3, nrow=2), main = "Tests for normality (PC of groups - subset blocks = 3 & repl = 1)", plotbreak = 3)
 mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1]==3),2:4], title=colnames(princomp_feat_groups)[2:4])
 mapply(normal.custom, x=princomp_feat_groups[which(metadata[,6]==1 & metadata[,1]==3),5:7], title=colnames(princomp_feat_groups)[5:7])
 
+#reset layout
+par.reset()
 
 #Tests for multivariate normal distribution:
 
@@ -455,7 +461,7 @@ which(bfeats.sw_pvalue > 0.01)
 #examining qqplot before and after boxcox transformation to dataset:
 #some of the features seem to fit better to the optimal line of normal distribution
 #although for most of the features a normal distribution still has to be rejected
-layout(matrix(1:10,ncol=5))
+layout.custom(matrix(1:10,ncol=5), main = "Boxcox - before vs after", plotbreak = 5)
 mapply(boxcox_view.custom, before_data=bfeats[,1:5], after_data=bfeats.boxcox[,1:5], title=colnames(bfeats)[1:5])
 mapply(boxcox_view.custom, before_data=bfeats[,6:10], after_data=bfeats.boxcox[,6:10], title=colnames(bfeats)[6:10])
 mapply(boxcox_view.custom, before_data=bfeats[,11:15], after_data=bfeats.boxcox[,11:15], title=colnames(bfeats)[11:15])
@@ -469,11 +475,13 @@ mapply(boxcox_view.custom, before_data=bfeats[,41:45], after_data=bfeats.boxcox[
 mapply(boxcox_view.custom, before_data=bfeats[,46:50], after_data=bfeats.boxcox[,46:50], title=colnames(bfeats)[46:50])
 mapply(boxcox_view.custom, before_data=bfeats[,51:55], after_data=bfeats.boxcox[,51:55], title=colnames(bfeats)[51:55])
 mapply(boxcox_view.custom, before_data=bfeats[,56:59], after_data=bfeats.boxcox[,56:59], title=colnames(bfeats)[56:59])
+#manually close device as last plot only contains 8 instead of 10 plots
+if(pdf.create == T) dev.off()
 
 #multivariate distribution after boxcox:
 #comparison of chi-sq-plots before and after transformation
 #after boxcox points are closer to optimal line (consider scale of y-axis!)
-layout(matrix(1:2, ncol=2, nrow=1))
+layout.custom(matrix(1:2, ncol=2, nrow=1), main = "Boxcox multivariate - before and after", plotbreak = 2)
 normal_multi.custom(bfeats, main="Before Boxcox")
 normal_multi.custom(bfeats.boxcox, main="After Boxcox")
 
@@ -503,7 +511,7 @@ which(bfeats.boxcox2.sw_pvalue > 0.01)
 
 #examine features before and after boxcox transformation
 #also the look upon qqplots before and after boxcox show that applying boxcox separately to subgroups is no good idea
-layout(matrix(1:10,ncol=5))
+layout.custom(matrix(1:10,ncol=5), main = "Boxcox per feature group - before vs after", plotbreak = 2)
 mapply(boxcox_view.custom, before_data=bfeats[,1:5], after_data=bfeats.boxcox2[,1:5], title=colnames(bfeats)[1:5])
 mapply(boxcox_view.custom, before_data=bfeats[,6:10], after_data=bfeats.boxcox2[,6:10], title=colnames(bfeats)[6:10])
 
@@ -540,64 +548,76 @@ bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
 #by number
 #cm_angle
 #2 outliers can be easily identified -> 111, 851
-dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle")
-stripchart(bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 3 & metadata[,6] ==1)], col="red", cex=3, add=TRUE, pch=1)
+dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle", 
+               highlight = bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 3 & metadata[,6] ==1)])
 #cm_conv
 #no real outliers can be seen
 dotplot.custom(bfeats.cm_conv.scale_max[which(metadata[,6]==1)], "Dotplot cm_conv")
 #cm_grad
 #2 outliers at the right end -> 581
-dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad")
-stripchart(bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 3 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad",
+               highlight = bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 3 & metadata[,6]==1)])
 #ela_conv
 #no outliers
-dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv")
-stripchart(bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv",
+               highlight = bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)])
 #ela_curv
 #3 outliers at the right -> 191, 2127, 2331
-dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv")
-stripchart(bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 5 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv",
+               highlight = bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 5 & metadata[,6]==1)])
 #ela_local
 #5 outliers at the right -> 561, 571, 1561, 2561, 2571
-dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local")
-stripchart(bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 5.5 & metadata[,6]==1)], col="red", cex=3, add=TRUE, pch=1)
+dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local",
+               highlight = bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 5.5 & metadata[,6]==1)])
 
 
 #visualization by means of boxplots
 #cm_angle
 #no outliers can be seen
-layout(matrix(1:1, ncol=1))
+par.reset()
+pdf.init("Boxplot of cm_angle Features")
 boxplot(bfeats.cm_angle.scale[,1:9], range=4, outline=TRUE, names=c(1:9), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of cm_angle Features", col=colors[1])
+pdf.write()
 #cm_conv
 #one outlier can be seen in feat 1
 layout(matrix(1:1, ncol=1))
+pdf.init("Boxplot of cm_conv Features")
 boxplot(bfeats.cm_conv.scale[,1:5], range=4, outline=TRUE, names=c(1:5), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of cm_conv Features", col=colors[1])
+pdf.write()
 #cm_grad
 #no outliers
 layout(matrix(1:1, ncol=1))
+pdf.init("Boxplot of cm_grad Features")
 boxplot(bfeats.cm_grad.scale[,1:3], range=4, outline=TRUE, names=c(1:3), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of cm_grad Features", col=colors[1])
+pdf.write()
 #ela_conv
 #no outliers
 layout(matrix(1:1, ncol=1))
+pdf.init("Boxplot of ela_conv Features")
 boxplot(bfeats.ela_conv.scale[,1:4], range=4, outline=TRUE, names=c(1:4), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_conv Features", col=colors[1])
+pdf.write()
 #ela_curv
 #3 outliers in feat 8, 3 outliers in feat 15
+pdf.init("Boxplot of ela_curv Features")
 layout(matrix(1:2, ncol=2))
 boxplot(bfeats.ela_curv.scale[,1:12], range=4, outline=TRUE, names=c(1:12), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
 boxplot(bfeats.ela_curv.scale[,13:23], range=4, outline=TRUE, names=c(13:23), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_curv Features", col=colors[1])
+pdf.write()
 #ela_local
 #1 outlier in feat 5, several in feats 1, 3, 4, 12, 14
+pdf.init("Boxplot of ela_local Features")
 layout(matrix(1:2, ncol=2))
 boxplot(bfeats.ela_local.scale[,1:7], range=4, outline=TRUE, names=c(1:7), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
 boxplot(bfeats.ela_local.scale[,8:14], range=4, outline=TRUE, names=c(8:14), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
+pdf.write()
 
 
 #identify maximum sigma-value per row /problem instance
@@ -624,7 +644,7 @@ bfeats2.ela_curv = bfeats.ela_curv[-out,]
 bfeats2.ela_local = bfeats.ela_local[-out,]
 
 #2-dimensional outliers
-
+par.reset()
 #since there is a large number of dimension we will basically examine the outliers
 #on scatterplots within the feature groups
 #cm_angle: no outliers can be directly identified

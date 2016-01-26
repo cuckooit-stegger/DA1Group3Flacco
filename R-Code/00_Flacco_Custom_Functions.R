@@ -22,7 +22,7 @@
 #-------------------------------------------------------------------------------------------------------
 #0.0 General settings
 #debug?
-debug = F
+debug = T
 
 #method to print debug messages, if debug is true
 debug.msg = function(s) {
@@ -36,7 +36,7 @@ debug.msg = function(s) {
 par.defaults = par(no.readonly = T)
 
 #write plots to pdf?
-pdf.create = F
+pdf.create = T
 
 #pdf file settings
 pdf.path = "../plots/"
@@ -45,27 +45,111 @@ pdf.filename.section = "1-1"
 pdf.filename.index = 1
 pdf.filename.main = ""
 
+pdf.layout.settings = matrix(1:1, ncol=1)
+pdf.layout.multiple = F
+pdf.layout.plotcount = 1
+pdf.layout.counter = 0
+
 #method to restore default graphical parameters
-par.reset = function(main = "") {
+par.reset = function() {
   par = par.defaults
-  
-  #write plot to pdf?
-  if(pdf.create == T) {
-    pdf.filename.main = main
-    
-    pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
-    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8,27)
-    
-    debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
-  }
-  
-  #increase index for pdf files
-  pdf.filename.index <<- pdf.filename.index + 1
+  #set default settings for only one plot per pdf file
+  pdf.layout.multiple <<- F
+  pdf.layout.plotcount <<- 1
+  pdf.layout.counter <<- 0
 }
 
+#method to set layout for plots including pdfs
+layout.custom = function(layout = matrix(1:1, ncol=1), main = "", plotbreak = -1) {
+  debug.msg(length(layout))
+  par = par.defaults
+  
+  pdf.layout.settings <<- layout
+  
+  if(plotbreak == -1) {
+    plotbreak = length(layout)
+  }
+  
+  if(length(layout) == 1) {
+    #set default settings for only one plot per pdf file
+    pdf.layout.multiple <<- F
+    pdf.layout.plotcount <<- 1
+    pdf.layout.counter <<- 0
+  } else {
+    #set settings for multiple plots per pdf file
+    pdf.layout.multiple <<- T
+    pdf.layout.plotcount <<- plotbreak
+    pdf.layout.counter <<- -1
+    pdf.filename.main <<- main
+    
+    pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
+    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8.27)
+    
+    debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
+    
+    #increase index for pdf files
+    pdf.filename.index <<- pdf.filename.index + 1
+  }
+  debug.msg(pdf.layout.plotcount)
+  pdf.init(main)
+  layout(layout)
+}
+
+#method to initialize new pdf device
+pdf.init = function(main = "") {
+  #write plot to pdf?
+  debug.msg("pdf.layout.multiple: ")
+  debug.msg(pdf.layout.multiple)
+  debug.msg("pdf.layout.plotcount: ")
+  debug.msg(pdf.layout.plotcount)
+  debug.msg("pdf.layout.counter: ")
+  debug.msg(pdf.layout.counter)
+  
+  if(pdf.create == T) {
+    if(pdf.layout.multiple == T && pdf.layout.counter == pdf.layout.plotcount) {
+      #begin new file
+      debug.msg("Begin new file")
+      layout.custom(pdf.layout.settings, main = pdf.filename.main, plotbreak = pdf.layout.plotcount)
+    }
+    
+    #layout for multiple plots in one file set?
+    if(pdf.layout.multiple == F) {
+      pdf.open(main)
+      
+      #increase index for pdf files
+      pdf.filename.index <<- pdf.filename.index + 1
+    } 
+    
+    #increase layout counter 
+    if(pdf.layout.multiple == T) {
+      pdf.layout.counter <<- pdf.layout.counter + 1
+      debug.msg(paste("PDF Counter:", pdf.layout.counter, sep = " "))
+    }
+  }
+}
+
+#create new empty pdf file
+pdf.open = function(main) {
+  
+  pdf.filename.main <<- main
+  
+  pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
+  pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8.27)
+  
+  debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
+}
+
+#method to close device and safe pdf to file
+pdf.write = function() {
+  #write plot to pdf?
+  if(pdf.create == T && (pdf.layout.multiple == F || pdf.layout.plotcount == pdf.layout.counter)) {
+    dev.off()
+  }
+}
 
 #method to begin a new section
 section.new = function(section = "1.1") {
+  par.reset()
   #set section for pdf filename
   pdf.filename.section <<- section
   #reset filename index to 1
@@ -108,7 +192,7 @@ panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) {
 #function to draw a scatterplot with custom upper and diagonal panels and with legend
 pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
   #reset window settings
-  par.reset(main = m)
+  pdf.init(main = m)
   #use full window for legend
   par(xpd=TRUE)
   oma = c(4,4,6,6)
@@ -128,9 +212,7 @@ pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=N
     legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
   }
   
-  if(pdf.create == T) {
-    dev.off()
-  }
+  pdf.write()
 }
 
 #function for determining the amount of pairwise correlation (pearson) within a certain dataset
@@ -153,7 +235,7 @@ pairs.cor <- function(x) {
 scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, legend.text, legend.col, legend.title) {
   require(scatterplot3d)
   #reset window settings
-  par.reset(main = main)
+  pdf.init(main = main)
   layout(rbind(1,2), heights=c(7,1))
   scatterplot3d(x, y, z, angle=angle, pch=19, cex.lab=1, type="p", main=main, xlab=xlab,
                 ylab=ylab, zlab=zlab, color=col)
@@ -166,7 +248,7 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   layout(matrix(1, ncol=1))
   par(mar=c(8,5,5,5))
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -197,7 +279,7 @@ cor.detect <- function(x, l=0) {
 #method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
 normal.custom <- function(x, title, col=colors[1], round=6) {
   #reset window settings
-  par.reset(main = title)
+  pdf.init(main = title)
   
   #draw qqplot
   qqnorm(x, main = title,pch=19,
@@ -207,7 +289,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
   #view histogram and p-value of SW-Test
   hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -215,7 +297,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
 require(MASS)
 normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
   #reset window settings
-  par.reset(main = main)
+  pdf.init(main = main)
   
   cm = colMeans(data)
   S = cov(data)
@@ -241,7 +323,7 @@ normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
          which(attributes(data)$row.names == names(out)),cex=1,col="blue")
   }
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -263,7 +345,7 @@ boxcox.custom <- function(data, cols=1:length(data)) {
 #function for displaying qqplot and SW pvalue before and after boxcox transformation
 boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], round=6) {
   #reset window settings
-  par.reset(main = title)
+  pdf.init(main = title)
   
   #draw qqplot before
   qqnorm(before_data, main = title ,pch=19,
@@ -279,25 +361,30 @@ boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], ro
   #insert "optimal" line
   qqline(after_data,lwd=2,col="red")
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 #custom function to plot dotplots of the different feature sets
-dotplot.custom <- function(x, title) {
+dotplot.custom <- function(x, title, highlight = "no") {
   #reset window settings
-  par.reset(main = title)
+  pdf.init(main = title)
   
   #dotplot
   stripchart(x,method="stack",pch=1,main=title)
   
-  if(pdf.create == T) {     dev.off()   }
+  #hightlight outliers if highlight != "no"
+  if(highlight != "no") {
+    stripchart(highlight, col="red", cex=3, add=TRUE, pch=1)  
+  }
+  
+  pdf.write()
 }
 
 
 #custom function for plotting outliers in scatterplots pairs
 pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
   #reset window settings
-  par.reset(main = m)
+  pdf.init(main = m)
   
   #plot the scatterplots
   pairs(x, panel = function (x, y, ...) {
@@ -307,7 +394,7 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
     #include correlation coefficients in upper panel and histograms on diagonal
   }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -315,7 +402,7 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
 require(MASS)
 outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
   #reset window settings
-  par.reset(main = main)
+  pdf.init(main = main)
   
   cm = colMeans(data)
   S = cov(data)
@@ -339,7 +426,7 @@ outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
     points(qc[out], sd[out], col="red", pch=1, cex=2)
   }
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -359,7 +446,7 @@ distances.custom <- function(data) {
 pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL, 
                                pch=19, legend.pch = 19) {
   #reset window settings
-  par.reset(main = m)
+  pdf.init(main = m)
   
   #use full window for legend
   par(xpd=TRUE)
@@ -379,7 +466,7 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
     legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
   }
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -390,7 +477,7 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
 #if required add expected wss of uniform data (only in case data is standardized)
 kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   #reset window settings
-  par.reset(main = main)
+  pdf.init(main = main)
   
   n = nrow(data)
   #variables for wss
@@ -409,7 +496,7 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
   plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 
@@ -417,7 +504,7 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
 #methods defind in the parameter settings
 aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
   #reset window settings
-  par.reset(main = "Dendrograms")
+  pdf.init(main = "Dendrograms")
   
   #set margin settings and layout
   par(mar = c(0, 5, 4, 2) + 0.1)
@@ -434,7 +521,7 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
                                        " linkage)"),
                           cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
   
-  if(pdf.create == T) {     dev.off()   }
+  pdf.write()
 }
 
 #save functions in file for loading them in Part01 and Part02
