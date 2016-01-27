@@ -77,6 +77,7 @@ summary(bfeats)
 #correlation within the feature-groups is relatively high. This retrieves that it makes sense in further steps to
 #reduce dimensionality
 pairs.custom(bfeats.cm_angle, m="Correlation of Features in the group of cm_angle")
+
 #influence of blocks metadata on CM-angle features (clusters for certain features):
 pairs.custom(bfeats.cm_angle, m="Correlation of Features in the group of cm_angle",col=colors[metadata[,1]], 
              legend.title="Number of blocks", legend.text=c("3 blocks", "5 blocks", "7 blocks"), 
@@ -86,26 +87,40 @@ pairs.custom(bfeats.cm_grad, m="Correlation of Features in the group of cm_grad"
 pairs.custom(bfeats.ela_conv, m="Correlation of Features in the group of ela_conv")
 pairs.custom(bfeats.ela_curv[,seq(1,7)], m="Correlation of Features in the group of ela_curv (extract)")
 pairs.custom(bfeats.ela_curv[,c(1,8,15)], m="Correlation of Features in the group of ela_curv (extract)")
-pairs.custom(bfeats.ela_local[,c(6,7,8,9,10,11,12)], m="Correlation of Features in the group of ela_local (extract)")
+pairs.custom(bfeats.ela_local, m="Correlation of Features in the group of ela_local")
+#Correlation analysis of ela_local without features which have weak correlation with each other.
+pairs.custom(bfeats.ela_local[,c(6,7,8,9,10,11,12,13)], m="Correlation of Features in the group of ela_local (extract)")
 
-#it can be seen that the with increasing number of peaks the costs of the ELA functions increase
+#it can be seen that the increasing number of peaks leads to increase the costs of the ELA functions.
 pairs.custom(data.frame(ela_conv.costs_runtime=bfeats.ela_conv[,4],
                         ela_curv.costs_runtime=bfeats.ela_curv[,23],
                         ela_local.costs_runtime=bfeats.ela_local[,14],
                         peak=metadata[,4]), m="Correlation of the number of peaks with ELA runtime")
-#it can be seen that the with increasing number of blocks the costs of the CM functions increase
+#it can be seen that the the increasing number of blocks leads to increase the costs of the CM functions.
 pairs.custom(data.frame(cm_angle.costs_runtime=bfeats.cm_angle[,9],
                         cm_conv.costs_runtime=bfeats.cm_conv[,5],
                         cm_grad.costs_runtime=bfeats.cm_grad[,3],
                         blocks=metadata[,1]), m="Correlation of the number of blocks with CM runtime")
 
 
+#Creating correlation metrix with ggheatmap of ggplot2
+#Use another approache for correlation metrix for more intuitive analysis of relationship between features.
+#ggheatmap of correlation of feature-gruop
+heatmap(bfeats.cm_angle, m="Correlation of Features in the group of cm_angle")
+heatmap(bfeats.cm_conv, m="Correlation of Features in the group of cm_conv")
+heatmap(bfeats.cm_grad, m="Correlation of Features in the group of cm_grad")
+heatmap(bfeats.ela_conv, m="Correlation of Features in the group of ela_conv")
+heatmap(bfeats.ela_conv, m="Correlation of Features in the group of ela_conv")
+heatmap(bfeats.ela_curv[,seq(1,7)], m="Correlation of Features in the group of ela_curv (extract)")
+heatmap(bfeats.ela_curv[,c(1,8,15)], m="Correlation of Features in the group of ela_curv (extract)")
+heatmap(bfeats.ela_local[,c(6,7,8,9,10,11,12,13)], m="Correlation of Features in the group of ela_local (extract)")
+
 #by analyzing some of this feature with regard to the repl metadata, one can see the only stochastic parameters are
 #the costs_runtime ones. For all other features the different repl are equal.
 pairs.custom(bfeats.cm_conv, m="Correlation of Features in the group of cm_conv", col=colors[metadata[,6]])
 
 #examine amount of pairwise correlation within groups
-#high for cm_grad
+#the most highest value is that of cm_grad
 pairs.cor(bfeats.cm_angle)  #0.4126
 pairs.cor(bfeats.cm_conv)   #0.4015
 pairs.cor(bfeats.cm_grad)   #0.5945
@@ -124,6 +139,8 @@ princomp(bfeats.cm_grad, corr=TRUE, scores=TRUE)$scores[,1],
 princomp(bfeats.ela_conv, corr=TRUE, scores=TRUE)$scores[,1],
 princomp(bfeats.ela_curv, corr=TRUE, scores=TRUE)$scores[,1],
 princomp(bfeats.ela_local, corr=TRUE, scores=TRUE)$scores[,1])
+summary(princomp_feat_groups)
+str(princomp_feat_groups)
 #check the amount of variance covered by first PC for each group
 summary(princomp(bfeats.cm_angle, corr=TRUE, scores=TRUE))  #93.30%
 summary(princomp(bfeats.cm_conv, corr=TRUE, scores=TRUE))  #73.38%
@@ -137,13 +154,12 @@ colnames(princomp_feat_groups) <- c("topology", "cm_angle", "cm_conv", "cm_curv"
 #view scatterplot
 #it can be seen that most of the feature_groups have low correlation between each other
 #BUT there are obviously some dependencies:
-#topology <> ela_curv
 #topology <> ela_local
-#cm_angle <> cm_curv
-#cm_conv <> ela_conv
-#ela_curv <> ela_local
+#topology <> cm_angle
+#cm_angle <> ela_local
 pairs.custom(princomp_feat_groups, m="Correlation between Feature Groups")
 pairs.cor(princomp_feat_groups)   #0.3365  correlation of certain groups drives overall correlation
+heatmap(princomp_feat_groups, m="Correlation between Feature Groups")
 
 #The blocks argument of the metadata has some effect on the CM-features
 pairs.custom(princomp_feat_groups[2:4], m="Correlation between Feature Groups", color=colors[metadata[,1]],
@@ -189,7 +205,6 @@ scatterplot3d.custom(bfeats.ela_conv[,1], bfeats.ela_curv[,3], bfeats.ela_local[
                      zlab="ela_local.basin_sizes.avg_best", col=colors[bfeats.topology], legend.title="Topology", 
                      legend.text=c("funnel", "random"), legend.col=colors[1:2])
 
-
 #scatterplots for displaying different feature groups against each other
 #analysis of ELA features in scatterplot
 scatterplot3d.custom(princomp_feat_groups$ela_conv, princomp_feat_groups$ela_curv, princomp_feat_groups$ela_local,
@@ -211,12 +226,12 @@ scatterplot3d.custom(princomp_feat_groups$ela_conv, princomp_feat_groups$ela_cur
                      legend.title = "Number of peaks", legend.text = c("20 peaks", "40 peaks", "60 peaks", 
                       "80 peaks", "100 peaks", "120 peaks", "140 peaks", "160 peaks","180 peaks", "200 peaks"))
 
-#scatterplot for cell mapping feature groups
+#scatterplot for cell mapping(CM) feature groups
 scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv, princomp_feat_groups$cm_grad,
               angle=55, main="3D Scatterplot on CM-features", xlab="cm_angle",
               ylab="cm_conv", zlab="cm_grad",col=colors[1], legend.title="no", legend.col=NULL, legend.text=NULL)
 
-#adding the information of how many blocks were created shows up three distinct clusters
+#adding the information of how many blocks were created and it shows up three distinct clusters
 scatterplot3d.custom(princomp_feat_groups$cm_angle, princomp_feat_groups$cm_conv, princomp_feat_groups$cm_grad,
                   angle=55, main="3D Scatterplot on CM-features (by the number of blocks)", xlab="cm_angle",
                   ylab="cm_conv", zlab="cm_grad", col=colors[metadata[,1]], legend.title="Number of blocks", 
