@@ -3,17 +3,18 @@
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
 # Yongsun Park (425844)
-#
+# Daniel Carriola (425699)
+# Gino Coletti (425904)
 
-#Responsiblity Code:    Alltogether
-#
+#Responsiblity Code: All together
+
 #Specific Questions:
-#   1.1 Visualization   Yongsun  Park
-#   1.2, 1.3 Normality  Gino  S.	Colletti
+#   1.1 Visualization   YongSun Park
+#   1.2, 1.3 Normality  Gino Coletti
 #   1.4 Outliers        Lucas Stegger
 #   2.1 PCA             Martin Kubicki
 #   2.2 MDS             Christian Siemen
-#   2.3 Cluster         Daniel  Camiola
+#   2.3 Cluster         Daniel Carriola
 
 #Part00 Custom Functions
 #
@@ -36,7 +37,7 @@ debug.msg = function(s) {
 par.defaults = par(no.readonly = T)
 
 #write plots to pdf?
-pdf.create = F
+pdf.create = T
 
 #pdf file settings
 pdf.path = "../plots/"
@@ -410,6 +411,37 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
   
   if(pdf.create == T) {     dev.off()   }
+}
+
+# Function that creates the SOM model with the data given
+require(kohonen)
+som.custom = function(data) {
+  # Change the data frame with training data to a matrix
+  # Also center and scale all variables to give them equal importance during
+  # the SOM training process.
+  som.matrix = as.matrix(scale(data))
+  # Create the SOM grid
+  som.grid = somgrid(xdim = 20, ydim = 20, topo = "hexagonal")
+  # Train the SOM
+  som.model = som(som.matrix, grid = som.grid, rlen = 100, alpha = c(0.05, 0.01), keep.data = TRUE, n.hood = "circular")
+
+  # Return the som.model for future usage
+  return(som.model)
+}
+
+# Function that plots the clusters in the SOM after calculating the number with the WSS
+som.plot = function(model, num.clusters = 2, main = "SOM Model") {
+  # Reset window settings
+  par.reset(main = main)
+
+  # Use hierarchical clustering to cluster the coded vectors
+  som.cluster = cutree(hclust(dist(model$codes)), k = num.clusters)
+
+  # Plot the results
+  plot(model, type = "mapping", bgcol = colors[som.cluster], main = paste("Map for", main))
+  add.cluster.boundaries(model, som.cluster)
+
+  if(pdf.create == T) { dev.off() }
 }
 
 
