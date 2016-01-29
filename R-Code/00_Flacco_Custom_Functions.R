@@ -499,6 +499,7 @@ reorder_correlation <- function(x){
   
 }
 
+library(ggplot2)
 # Create a ggheatmap
 ggheatmap <- function(x, m){
   ggplot(x, aes(Var2, Var1, fill = value))+
