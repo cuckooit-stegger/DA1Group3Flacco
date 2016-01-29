@@ -78,10 +78,12 @@ summary(bfeats)
 #reduce dimensionality
 pairs.custom(bfeats.cm_angle, m="Correlation of Features in the group of cm_angle")
 
-#influence of blocks metadata on CM-angle features (clusters for certain features):
+#After implementing analysis of the relationship between feature-group and blocks metadata,
+#we figured out that blocks metadata influence on only CM-angle features (clusters for certain features):
 pairs.custom(bfeats.cm_angle, m="Correlation of Features in the group of cm_angle",col=colors[metadata[,1]], 
              legend.title="Number of blocks", legend.text=c("3 blocks", "5 blocks", "7 blocks"), 
              legend.col = colors[c(3,5,7)])
+
 pairs.custom(bfeats.cm_conv, m="Correlation of Features in the group of cm_conv")
 pairs.custom(bfeats.cm_grad, m="Correlation of Features in the group of cm_grad")
 pairs.custom(bfeats.ela_conv, m="Correlation of Features in the group of ela_conv")
