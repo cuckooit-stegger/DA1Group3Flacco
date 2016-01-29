@@ -130,7 +130,7 @@ pairs.cor(bfeats.ela_curv)  #0.1954
 pairs.cor(bfeats.ela_local) #0.2519
 
 #examine the correlations between different feature groups by scatterplots
-#for each feature group the first PC is included in the scatterplot to cover as much variance as
+#for each feature group the first PC is included in the scatterplot to cover as many variances as
 #possible by one datacolumn in the scatterplot
 princomp_feat_groups = data.frame(
 bfeats.topology,
