@@ -3,17 +3,18 @@
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
 # Yongsun Park (425844)
-#
+# Daniel Carriola (425699)
+# Gino Coletti (425904)
 
-#Responsiblity Code:    Alltogether
-#
+#Responsiblity Code: All together
+
 #Specific Questions:
-#   1.1 Visualization   Yongsun  Park
-#   1.2, 1.3 Normality  Gino  S.  Colletti
+#   1.1 Visualization   YongSun Park
+#   1.2, 1.3 Normality  Gino Coletti
 #   1.4 Outliers        Lucas Stegger
 #   2.1 PCA             Martin Kubicki
 #   2.2 MDS             Christian Siemen
-#   2.3 Cluster         Daniel  Camiola
+#   2.3 Cluster         Daniel Carriola
 
 #Part02 Unsupervised Learning
 #
@@ -979,3 +980,74 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2)
 #for CM-Features and funnel topology appropriate indeed
 
 # ----------------------------------------------------------------------------------------------------------------
+
+#2.3.4 Self-Organising Maps (SOM) for Clustering
+section.new("2-3-4")
+
+# Calculate the SOM model of all the general data from the dataset
+som.model.bfeats3.s = som.custom(bfeats3.s)
+# Get the number of clusters with WSS
+kmeans_wss.custom(som.model.bfeats3.s$codes, 12, "SOM Model")
+
+# After printing the WSS plot, we consider 2 clusters in this case.
+# We plot the SOM results
+# 2 clusters
+som.plot(som.model.bfeats3.s, 2, "SOM 2 Clusters")
+
+
+# Now we consider the dataset with blocks == 3
+som.model.bfeats3.blocks3 = som.custom(bfeats3.s[which(metadata3[,1]==3),])
+# Check the number of clusters
+kmeans_wss.custom(som.model.bfeats3.blocks3$codes, 12, "SOM Model (blocks == 3)")
+
+# Again just 2 clusters for this case
+# Plot the results
+som.plot(som.model.bfeats3.blocks3, 2, "SOM 2 C (blocks == 3)") 
+
+
+# Now let's just consider the pca_cor feature to check the difference between the SOM and the normal clustering
+som.model.pca_cor = som.custom(bfeats3.pca_cor$scores[which(metadata3[,1]==3),1:6])
+# Get the number of clusters
+kmeans_wss.custom(som.model.pca_cor$codes, 12, "SOM Model pca_cor")
+
+# Here we can see 7 clusters
+# Let's plot them
+som.plot(som.model.pca_cor, 7, "SOM 7 C pca_cor")
+
+
+# Just checking the CM features in this case
+som.model.cm = som.custom(bfeats3.s[which(metadata3[,1]==3 & bfeats3[,1]==1),2:18])
+# Get the number of clusters
+kmeans_wss.custom(som.model.cm$codes, 12, "SOM Model cm")
+
+# Here we can get between 2 and 5 clusters
+# Let's check each case
+som.plot(som.model.cm, 2, "SOM 2 C cm")
+som.plot(som.model.cm, 5, "SOM 5 C cm")
+
+
+# Now let's consider the ELA features
+som.model.ela = som.custom(bfeats3.s[,19:58])
+# Number of clusters
+kmeans_wss.custom(som.model.ela$codes, 12, "SOM Model ela")
+
+# The result shows 2 and maybe 9 clusters
+# Let's check each case
+som.plot(som.model.ela, 2, "SOM 2 C ela")
+som.plot(som.model.ela, 9, "SOM 9 C ela")
+
+
+# Finally, let's consider the ELA features with blocks == 3 and top == random
+som.model.ela.blocks3 = som.custom(bfeats3.s[which(metadata3[,1]==3),19:58])
+# Number of clusters
+kmeans_wss.custom(som.model.ela.blocks3$codes, 12, "SOM Model ela (blocks == 3)")
+ 
+# In this case, we just got 2 clusters
+som.plot(som.model.ela.blocks3, 2, "SOM 2 C ela (blocks == 3)")
+
+
+# Conclusions:
+# After using the SOM method, we still get (for most of the cases) 2 clusters as result
+# There's no big difference between the methods
+# In the end, it works as a way to conclude the general number of clusters
+# It shows which features/parameters don't give that much information 

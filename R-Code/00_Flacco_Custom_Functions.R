@@ -3,17 +3,18 @@
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
 # Yongsun Park (425844)
-#
+# Daniel Carriola (425699)
+# Gino Coletti (425904)
 
-#Responsiblity Code:    Alltogether
-#
+#Responsiblity Code: All together
+
 #Specific Questions:
-#   1.1 Visualization   Yongsun  Park
-#   1.2, 1.3 Normality  Gino  S.	Colletti
+#   1.1 Visualization   YongSun Park
+#   1.2, 1.3 Normality  Gino Coletti
 #   1.4 Outliers        Lucas Stegger
 #   2.1 PCA             Martin Kubicki
 #   2.2 MDS             Christian Siemen
-#   2.3 Cluster         Daniel  Camiola
+#   2.3 Cluster         Daniel Carriola
 
 #Part00 Custom Functions
 #
@@ -45,111 +46,27 @@ pdf.filename.section = "1-1"
 pdf.filename.index = 1
 pdf.filename.main = ""
 
-pdf.layout.settings = matrix(1:1, ncol=1)
-pdf.layout.multiple = F
-pdf.layout.plotcount = 1
-pdf.layout.counter = 0
-
 #method to restore default graphical parameters
-par.reset = function() {
-  par = par.defaults
-  #set default settings for only one plot per pdf file
-  pdf.layout.multiple <<- F
-  pdf.layout.plotcount <<- 1
-  pdf.layout.counter <<- 0
-}
-
-#method to set layout for plots including pdfs
-layout.custom = function(layout = matrix(1:1, ncol=1), main = "", plotbreak = -1) {
-  debug.msg(length(layout))
+par.reset = function(main = "") {
   par = par.defaults
   
-  pdf.layout.settings <<- layout
-  
-  if(plotbreak == -1) {
-    plotbreak = length(layout)
-  }
-  
-  if(length(layout) == 1) {
-    #set default settings for only one plot per pdf file
-    pdf.layout.multiple <<- F
-    pdf.layout.plotcount <<- 1
-    pdf.layout.counter <<- 0
-  } else {
-    #set settings for multiple plots per pdf file
-    pdf.layout.multiple <<- T
-    pdf.layout.plotcount <<- plotbreak
-    pdf.layout.counter <<- -1
-    pdf.filename.main <<- main
+  #write plot to pdf?
+  if(pdf.create == T) {
+    pdf.filename.main = main
     
     pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
-    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8.27)
+    pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8,27)
     
     debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
-    
-    #increase index for pdf files
-    pdf.filename.index <<- pdf.filename.index + 1
   }
-  debug.msg(pdf.layout.plotcount)
-  pdf.init(main)
-  layout(layout)
+  
+  #increase index for pdf files
+  pdf.filename.index <<- pdf.filename.index + 1
 }
 
-#method to initialize new pdf device
-pdf.init = function(main = "") {
-  #write plot to pdf?
-  debug.msg("pdf.layout.multiple: ")
-  debug.msg(pdf.layout.multiple)
-  debug.msg("pdf.layout.plotcount: ")
-  debug.msg(pdf.layout.plotcount)
-  debug.msg("pdf.layout.counter: ")
-  debug.msg(pdf.layout.counter)
-  
-  if(pdf.create == T) {
-    if(pdf.layout.multiple == T && pdf.layout.counter == pdf.layout.plotcount) {
-      #begin new file
-      debug.msg("Begin new file")
-      layout.custom(pdf.layout.settings, main = pdf.filename.main, plotbreak = pdf.layout.plotcount)
-    }
-    
-    #layout for multiple plots in one file set?
-    if(pdf.layout.multiple == F) {
-      pdf.open(main)
-      
-      #increase index for pdf files
-      pdf.filename.index <<- pdf.filename.index + 1
-    } 
-    
-    #increase layout counter 
-    if(pdf.layout.multiple == T) {
-      pdf.layout.counter <<- pdf.layout.counter + 1
-      debug.msg(paste("PDF Counter:", pdf.layout.counter, sep = " "))
-    }
-  }
-}
-
-#create new empty pdf file
-pdf.open = function(main) {
-  
-  pdf.filename.main <<- main
-  
-  pdf.filename = paste(pdf.filename.section, pdf.filename.index, pdf.filename.main, sep="_")
-  pdf(paste(pdf.path, pdf.filename, ".pdf", sep = ""), width = 11.69, height = 8.27)
-  
-  debug.msg(paste(pdf.path, pdf.filename, ".pdf", sep = ""))
-}
-
-#method to close device and safe pdf to file
-pdf.write = function() {
-  #write plot to pdf?
-  if(pdf.create == T && (pdf.layout.multiple == F || pdf.layout.plotcount == pdf.layout.counter)) {
-    dev.off()
-  }
-}
 
 #method to begin a new section
 section.new = function(section = "1.1") {
-  par.reset()
   #set section for pdf filename
   pdf.filename.section <<- section
   #reset filename index to 1
@@ -160,7 +77,7 @@ section.new = function(section = "1.1") {
 #Custom functions with regard to content
 
 # colors for the functions
-colors = c('#1abc9c', '#FFD700', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12', '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d', '#666666', '#FF0000', '#00FF00', '#0000FF', '#FFFF00')
+colors = c('#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12', '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d', '#666666', '#FF0000', '#00FF00', '#0000FF', '#FFFF00')
 
 
 #function to print histograms to the diagonal panels of a scatterplot
@@ -192,7 +109,7 @@ panel.cor2 <- function(x, y, digits=2, prefix="", cex.cor=1, ...) {
 #function to draw a scatterplot with custom upper and diagonal panels and with legend
 pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL) {
   #reset window settings
-  pdf.init(main = m)
+  par.reset(main = m)
   #use full window for legend
   par(xpd=TRUE)
   oma = c(4,4,6,6)
@@ -212,7 +129,9 @@ pairs.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=N
     legend("right",legend=legend.text, col=legend.col, pch=19, title=legend.title, cex=0.8)
   }
   
-  pdf.write()
+  if(pdf.create == T) {
+    dev.off()
+  }
 }
 
 #function for determining the amount of pairwise correlation (pearson) within a certain dataset
@@ -235,7 +154,7 @@ pairs.cor <- function(x) {
 scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, legend.text, legend.col, legend.title) {
   require(scatterplot3d)
   #reset window settings
-  pdf.init(main = main)
+  par.reset(main = main)
   layout(rbind(1,2), heights=c(7,1))
   scatterplot3d(x, y, z, angle=angle, pch=19, cex.lab=1, type="p", main=main, xlab=xlab,
                 ylab=ylab, zlab=zlab, color=col)
@@ -248,7 +167,7 @@ scatterplot3d.custom <- function(x, y, z, angle, main, xlab, ylab, zlab, col, le
   layout(matrix(1, ncol=1))
   par(mar=c(8,5,5,5))
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -279,7 +198,7 @@ cor.detect <- function(x, l=0) {
 #method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
 normal.custom <- function(x, title, col=colors[1], round=6) {
   #reset window settings
-  pdf.init(main = title)
+  par.reset(main = title)
   
   #draw qqplot
   qqnorm(x, main = title,pch=19,
@@ -289,7 +208,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
   #view histogram and p-value of SW-Test
   hist(x, main = paste("SW-Test: ", round(shapiro.test(x)$p.value, round)), col="cyan", xlab="")
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -297,7 +216,7 @@ normal.custom <- function(x, title, col=colors[1], round=6) {
 require(MASS)
 normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
   #reset window settings
-  pdf.init(main = main)
+  par.reset(main = main)
   
   cm = colMeans(data)
   S = cov(data)
@@ -323,7 +242,7 @@ normal_multi.custom <- function(data, main, outl = FALSE, col=colors[1]) {
          which(attributes(data)$row.names == names(out)),cex=1,col="blue")
   }
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -345,7 +264,7 @@ boxcox.custom <- function(data, cols=1:length(data)) {
 #function for displaying qqplot and SW pvalue before and after boxcox transformation
 boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], round=6) {
   #reset window settings
-  pdf.init(main = title)
+  par.reset(main = title)
   
   #draw qqplot before
   qqnorm(before_data, main = title ,pch=19,
@@ -361,30 +280,25 @@ boxcox_view.custom <- function(before_data, after_data, title, col=colors[1], ro
   #insert "optimal" line
   qqline(after_data,lwd=2,col="red")
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 #custom function to plot dotplots of the different feature sets
-dotplot.custom <- function(x, title, highlight = "no") {
+dotplot.custom <- function(x, title) {
   #reset window settings
-  pdf.init(main = title)
+  par.reset(main = title)
   
   #dotplot
   stripchart(x,method="stack",pch=1,main=title)
   
-  #hightlight outliers if highlight != "no"
-  if(highlight != "no") {
-    stripchart(highlight, col="red", cex=3, add=TRUE, pch=1)  
-  }
-  
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
 #custom function for plotting outliers in scatterplots pairs
 pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
   #reset window settings
-  pdf.init(main = m)
+  par.reset(main = m)
   
   #plot the scatterplots
   pairs(x, panel = function (x, y, ...) {
@@ -394,7 +308,7 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
     #include correlation coefficients in upper panel and histograms on diagonal
   }, pch=19, upper.panel=panel.cor2, diag.panel=panel.hist2, main=m, col=color)
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -402,7 +316,7 @@ pairs_out.custom <- function(x, m, outl=NULL, color=colors[1]) {
 require(MASS)
 outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
   #reset window settings
-  pdf.init(main = main)
+  par.reset(main = main)
   
   cm = colMeans(data)
   S = cov(data)
@@ -426,7 +340,7 @@ outlier_multi.custom <- function(data, main, num_outl = 3, col=colors[1]) {
     points(qc[out], sd[out], col="red", pch=1, cex=2)
   }
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -446,7 +360,7 @@ distances.custom <- function(data) {
 pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.text=NULL, legend.col=NULL, 
                                pch=19, legend.pch = 19) {
   #reset window settings
-  pdf.init(main = m)
+  par.reset(main = m)
   
   #use full window for legend
   par(xpd=TRUE)
@@ -466,7 +380,7 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
     legend("right",legend=legend.text, col=legend.col, pch=legend.pch, title=legend.title, cex=0.8)
   }
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
 }
 
 
@@ -477,7 +391,7 @@ pairs_noreg.custom <- function(x, m, color=colors[1], legend.title="no", legend.
 #if required add expected wss of uniform data (only in case data is standardized)
 kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   #reset window settings
-  pdf.init(main = main)
+  par.reset(main = main)
   
   n = nrow(data)
   #variables for wss
@@ -496,7 +410,38 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
   plot(wss, type="b", main=paste("WSS of kmeans for ", main), xlab="Num of clusters", ylab="WSS")
   plot(log(wss), type="b", main=paste("log(WSS) of kmeans for ", main), xlab="Num of clusters", ylab="log(WSS)")
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
+}
+
+# Function that creates the SOM model with the data given
+require(kohonen)
+som.custom = function(data) {
+  # Change the data frame with training data to a matrix
+  # Also center and scale all variables to give them equal importance during
+  # the SOM training process.
+  som.matrix = as.matrix(scale(data))
+  # Create the SOM grid
+  som.grid = somgrid(xdim = 20, ydim = 20, topo = "hexagonal")
+  # Train the SOM
+  som.model = som(som.matrix, grid = som.grid, rlen = 100, alpha = c(0.05, 0.01), keep.data = TRUE, n.hood = "circular")
+
+  # Return the som.model for future usage
+  return(som.model)
+}
+
+# Function that plots the clusters in the SOM after calculating the number with the WSS
+som.plot = function(model, num.clusters = 2, main = "SOM Model") {
+  # Reset window settings
+  par.reset(main = main)
+
+  # Use hierarchical clustering to cluster the coded vectors
+  som.cluster = cutree(hclust(dist(model$codes)), k = num.clusters)
+
+  # Plot the results
+  plot(model, type = "mapping", bgcol = colors[som.cluster], main = paste("Map for", main))
+  add.cluster.boundaries(model, som.cluster)
+
+  if(pdf.create == T) { dev.off() }
 }
 
 
@@ -504,7 +449,7 @@ kmeans_wss.custom <- function(data, max_clust, main="Kmeans WSS") {
 #methods defind in the parameter settings
 aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "centroid", "ward.D", "ward.D2")) {
   #reset window settings
-  pdf.init(main = "Dendrograms")
+  par.reset(main = "Dendrograms")
   
   #set margin settings and layout
   par(mar = c(0, 5, 4, 2) + 0.1)
@@ -521,7 +466,72 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
                                        " linkage)"),
                           cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
   
-  pdf.write()
+  if(pdf.create == T) {     dev.off()   }
+}
+
+#funtion for creating corrleation metrix by using ggplot2
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(x){
+  x[upper.tri(x)] <- NA
+  return(x)
+}
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(x){
+  x[lower.tri(x)]<- NA
+  return(x)
+}
+
+# Reorder the correlation matrix and alter the shape of correlation data into triangle form
+reorder_cormat <- function(x){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-x)/2)
+  hc <- hclust(dd)
+  x <- x[hc$order, hc$order]
+}
+
+# Creating correlation matrix which is reordered with upper triple form
+library(reshape2)
+reorder_correlation <- function(x){
+  x <- reorder_cormat(x)
+  y <- get_upper_tri(x)
+  return(y)
+  
+}
+
+# Create a ggheatmap
+ggheatmap <- function(x, m){
+  ggplot(x, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed()+ #add correlation coefficients on the heatmap
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 3) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.justification = c(1, 0),
+      legend.position = c(0.5, 0.7),
+      legend.direction = "horizontal")+
+    guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                                 title.position = "top", title.hjust = 0.5))+
+    # Input title of the graph
+    ggtitle(m) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+}
+
+##Aggregated function for ggheatmap to use function with only one command
+heatmap <- function(x, m){
+  y <- round(cor(x),2)
+  y <- melt(reorder_correlation(y), na.rm = TRUE)
+  ggheatmap(y, m)
 }
 
 #save functions in file for loading them in Part01 and Part02
