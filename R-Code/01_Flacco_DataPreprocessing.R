@@ -555,37 +555,7 @@ bfeats.cm_conv.scale_max = apply(bfeats.cm_conv.scale, 1, max)
 bfeats.cm_grad.scale_max = apply(bfeats.cm_grad.scale, 1, max)
 bfeats.ela_conv.scale_max = apply(bfeats.ela_conv.scale, 1, max)
 bfeats.ela_curv.scale_max = apply(bfeats.ela_curv.scale, 1, max)
-bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale, 1, max)
-
-
-#therefore max value of each problem instance of all features within feature group is plotted
-#for identifying outliers visually
-#one displaying one repl (see metadata), because values are often equal, therefore only 1/10 of outliers identified
-#by number
-#cm_angle
-#2 outliers can be easily identified -> 111, 851
-dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle", 
-               highlight = bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 3 & metadata[,6] ==1)])
-#cm_conv
-#no real outliers can be seen
-dotplot.custom(bfeats.cm_conv.scale_max[which(metadata[,6]==1)], "Dotplot cm_conv")
-#cm_grad
-#2 outliers at the right end -> 581
-dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad",
-               highlight = bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 3 & metadata[,6]==1)])
-#ela_conv
-#no outliers
-dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv",
-               highlight = bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)])
-#ela_curv
-#3 outliers at the right -> 191, 2127, 2331
-dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv",
-               highlight = bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 5 & metadata[,6]==1)])
-#ela_local
-#5 outliers at the right -> 561, 571, 1561, 2561, 2571
-dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local",
-               highlight = bfeats.ela_local.scale_max[which(bfeats.ela_local.scale_max > 5.5 & metadata[,6]==1)])
-
+bfeats.ela_local.scale_max = apply(bfeats.ela_local.scale[,-12], 1, max) #exclude feature 12 as it is not normally distributed (see boxplot)
 
 #visualization by means of boxplots
 #cm_angle
@@ -634,6 +604,46 @@ boxplot(bfeats.ela_local.scale[,1:7], range=4, outline=TRUE, names=c(1:7), ylab=
 boxplot(bfeats.ela_local.scale[,8:14], range=4, outline=TRUE, names=c(8:14), ylab="Index of Feature", 
         horizontal=TRUE, main="Boxplot of ela_local Features", col=colors[1])
 pdf.write()
+
+
+#therefore max value of each problem instance of all features within feature group is plotted
+#for identifying outliers visually
+#one displaying one repl (see metadata), because values are often equal, therefore only 1/10 of outliers identified
+#by number
+#cm_angle
+#2 outliers can be easily identified -> 111, 851
+dotplot.custom(bfeats.cm_angle.scale_max[which(metadata[,6]==1)], "Dotplot cm_angle", 
+               highlight = bfeats.cm_angle.scale_max[which(bfeats.cm_angle.scale_max > 3 & metadata[,6] ==1)])
+#cm_conv
+#no real outliers can be seen
+dotplot.custom(bfeats.cm_conv.scale_max[which(metadata[,6]==1)], "Dotplot cm_conv")
+#cm_grad
+#2 outliers at the right end -> 581
+dotplot.custom(bfeats.cm_grad.scale_max[which(metadata[,6]==1)], "Dotplot cm_grad",
+               highlight = bfeats.cm_grad.scale_max[which(bfeats.cm_grad.scale_max > 3 & metadata[,6]==1)])
+#ela_conv
+#no outliers
+dotplot.custom(bfeats.ela_conv.scale_max[which(metadata[,6]==1)], "Dotplot ela_conv",
+               highlight = bfeats.ela_conv.scale_max[which(bfeats.ela_conv.scale_max > 4 & metadata[,6]==1)])
+#ela_curv
+#3 outliers at the right -> 191, 2127, 2331
+dotplot.custom(bfeats.ela_curv.scale_max[which(metadata[,6]==1)], "Dotplot ela_curv",
+               highlight = bfeats.ela_curv.scale_max[which(bfeats.ela_curv.scale_max > 5 & metadata[,6]==1)])
+#ela_local
+#5 outliers at the right -> 561, 571, 1561, 2561, 2571
+dotplot.custom(bfeats.ela_local.scale_max[which(metadata[,6]==1)], "Dotplot ela_local")
+
+#all outliers which were found by dotplots:
+#102  111  112  113  114  115  116  117  118  119  120  191  194  195  196  227  476  502  561  562  563  564  566  567
+#568  569  570  571  573  575  576  581  582  583  584  585  586  587  588  589  590  774  851  852  853  854  855  856
+#857  858  859  860  924 1197 1200 1309 1553 1561 1562 1563 1564 1565 1567 1569 1570 1575 1576 1593 1937 1959 1975 2171
+#2172 2331 2561 2562 2563 2564 2565 2566 2567 2568 2569 2571 2572 2574 2576 2579 2580 2628 2778 2794
+out.dotplot = unique(c(
+  which(bfeats.cm_angle.scale_max > 3),
+  which(bfeats.cm_grad.scale_max > 3),
+  which(bfeats.ela_conv.scale_max > 4),
+  which(bfeats.ela_curv.scale_max > 5)
+))
 
 
 #identify maximum sigma-value per row /problem instance
@@ -685,8 +695,15 @@ pairs.custom(bfeats2.ela_local[,seq(8,14)], m="Correlation within Feature Group 
 #view scatterplot of corr between features (see 1.1)
 #1 outlier: 2668
 pairs_out.custom(princomp_feat_groups, m="Correlation between Feature Groups",
-                 outl = which(princomp_feat_groups[,5]>400))
+                 outl = which(princomp_feat_groups[,5]>400 | princomp_feat_groups[,6]< -20000))
 
+#all outliers which were found by scatterplots:
+out.bivariate = unique(c(
+  which(bfeats.cm_grad[,3]>0.08),
+  which(bfeats.ela_conv[,4]>400),
+  which(bfeats.ela_curv[,18]>4),
+  which(princomp_feat_groups[,5]>400), which(princomp_feat_groups[,6]< -20000)
+))
 
 #Multidimensional outliers
 #chi-sq-plot and distance calculation
