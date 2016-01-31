@@ -3,7 +3,8 @@
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
 # Yongsun Park (425844)
-#
+# Daniel Carriola (425699)
+# Gino Coletti (425904)
 
 #Responsiblity Code:    Alltogether
 #
