@@ -17,6 +17,16 @@
 #   2.2 MDS             Christian Siemen
 #   2.3 Cluster         Daniel Carriola
 
+# install packages (uncomment if any package is needed)
+#install.packages("kohonen")
+#install.packages("reshape2")
+#install.packages("ggplot2")
+#install.packages("scatterplot3d")
+#install.packages("MASS")
+#install.packages("AID")
+#install.packages("mvShapiroTest")
+#install.packages("cluster")
+
 #Part00 Custom Functions
 #
 #Defines custom functions which are used in Part01 and Part02
