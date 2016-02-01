@@ -91,6 +91,7 @@ pairs.custom(bfeats.ela_conv, m="Correlation of Features in the group of ela_con
 pairs.custom(bfeats.ela_curv[,seq(1,7)], m="Correlation of Features in the group of ela_curv (extract)")
 pairs.custom(bfeats.ela_curv[,c(1,8,15)], m="Correlation of Features in the group of ela_curv (extract)")
 pairs.custom(bfeats.ela_local, m="Correlation of Features in the group of ela_local")
+
 #Correlation analysis of ela_local without features which have weak correlation with each other.
 pairs.custom(bfeats.ela_local[,c(6,7,8,9,10,11,12,13)], m="Correlation of Features in the group of ela_local (extract)")
 
@@ -117,7 +118,7 @@ heatmap(bfeats.ela_curv[,seq(1,7)], m="Correlation of Features in the group of e
 heatmap(bfeats.ela_curv[,c(1,8,15)], m="Correlation of Features in the group of ela_curv (extract)")
 heatmap(bfeats.ela_local[,c(6,7,8,9,10,11,12,13)], m="Correlation of Features in the group of ela_local (extract)")
 
-#by analyzing some of this feature with regard to the repl metadata, one can see the only stochastic parameters are
+#By analyzing some of this feature with regard to the repl metadata, one can see the only stochastic parameters are
 #the costs_runtime ones. For all other features the different repl are equal.
 pairs.custom(bfeats.cm_conv, m="Correlation of Features in the group of cm_conv", col=colors[metadata[,6]])
 
@@ -130,7 +131,7 @@ pairs.cor(bfeats.ela_conv)  #0.3032
 pairs.cor(bfeats.ela_curv)  #0.1954
 pairs.cor(bfeats.ela_local) #0.2519
 
-#examine the correlations between different feature groups by scatterplots
+#Examine the correlations between different feature groups by scatterplots
 #for each feature group the first PC is included in the scatterplot to cover as many variances as
 #possible by one datacolumn in the scatterplot
 princomp_feat_groups = data.frame(
@@ -143,6 +144,7 @@ princomp(bfeats.ela_curv, corr=TRUE, scores=TRUE)$scores[,1],
 princomp(bfeats.ela_local, corr=TRUE, scores=TRUE)$scores[,1])
 summary(princomp_feat_groups)
 str(princomp_feat_groups)
+
 #check the amount of variance covered by first PC for each group
 summary(princomp(bfeats.cm_angle, corr=TRUE, scores=TRUE))  #93.30%
 summary(princomp(bfeats.cm_conv, corr=TRUE, scores=TRUE))  #73.38%
@@ -150,7 +152,8 @@ summary(princomp(bfeats.cm_grad, corr=TRUE, scores=TRUE))  #95.55%
 summary(princomp(bfeats.ela_conv, corr=TRUE, scores=TRUE))  #99.99%
 summary(princomp(bfeats.ela_curv, corr=TRUE, scores=TRUE))  #60.06%
 summary(princomp(bfeats.ela_local, corr=TRUE, scores=TRUE))  #99.80%
-#column names
+
+#Set column names
 colnames(princomp_feat_groups) <- c("topology", "cm_angle", "cm_conv", "cm_curv", "ela_conv", "ela_curv", "ela_local")
 
 #view scatterplot
@@ -167,16 +170,16 @@ heatmap(princomp_feat_groups, m="Correlation between Feature Groups")
 pairs.custom(princomp_feat_groups[2:4], m="Correlation between Feature Groups", color=colors[metadata[,1]],
              legend.title="Number of blocks", legend.text=c("3 blocks", "5 blocks", "7 blocks"), 
              legend.col = colors[c(3,5,7)])
-#the number of peaks has no significant influence; prob.seed and repl sare neither.
+#The number of peaks has no significant influence; prob.seed and repl are neither.
 
 
-#scatterplot3d
+#Scatterplot3d
 #include package
 require(scatterplot3d) 
 
-#analyizing the distance to best, worst and the ratio of best and worst in a 3d scatterplot results
+#Analyizing the distance to best, worst and the ratio of best and worst in a 3d scatterplot results
 #in showing up three distinct clusters, consisting of a different number of blocks
-#explanation: cells in a setting with smaller number of blocks are larger, distances therefore larger too
+#explanation: cells in a setting with smaller number of blocks are larger. therefore, distances are larger too
 scatterplot3d.custom(bfeats.cm_angle[,1], bfeats.cm_angle[,3], bfeats.cm_angle[,7],
                      angle=35, main="3D Scatterplot on features within cm_angle", xlab="dist_ctr2best.mean", ylab="dist_ctr2worst.mean", 
                      zlab="y_ratio_best2worst.mean", col=colors[metadata[,1]], legend.title="Number of blocks", 

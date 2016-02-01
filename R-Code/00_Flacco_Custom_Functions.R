@@ -274,7 +274,71 @@ cor.detect <- function(x, l=0) {
   }
 }
 
+#funtion for creating corrleation metrix by using ggplot2
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(x){
+  x[upper.tri(x)] <- NA
+  return(x)
+}
 
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(x){
+  x[lower.tri(x)]<- NA
+  return(x)
+}
+
+# Reorder the correlation matrix and alter the shape of correlation data into triangle form
+reorder_cormat <- function(x){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-x)/2)
+  hc <- hclust(dd)
+  x <- x[hc$order, hc$order]
+}
+
+# Creating correlation matrix which is reordered with upper triple form
+library(reshape2)
+reorder_correlation <- function(x){
+  x <- reorder_cormat(x)
+  y <- get_upper_tri(x)
+  return(y)
+  
+}
+
+library(ggplot2)
+# Create a ggheatmap
+ggheatmap <- function(x, m){
+  ggplot(x, aes(Var2, Var1, fill = value))+
+    geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     size = 12, hjust = 1))+
+    coord_fixed()+ #add correlation coefficients on the heatmap
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 3) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.justification = c(1, 0),
+      legend.position = c(0.5, 0.7),
+      legend.direction = "horizontal")+
+    guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                                 title.position = "top", title.hjust = 0.5))+
+    # Input title of the graph
+    ggtitle(m) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+}
+
+##Aggregated function for ggheatmap to use function with only one command
+heatmap <- function(x, m){
+  y <- round(cor(x),2)
+  y <- melt(reorder_correlation(y), na.rm = TRUE)
+  ggheatmap(y, m)
+}
 
 #method for different normality test
 #method for displaying qqplot, histogram and p-value of Shapiro-Wilk-Test of feature given as parameter
@@ -554,72 +618,6 @@ aggl_dend.custom <- function(data, methods=c("single", "complete", "average", "c
                           cex = 1, cex.axis = 1, cex.lab = 1, cex.main = 1))
   
   pdf.write()
-}
-
-#funtion for creating corrleation metrix by using ggplot2
-# Get lower triangle of the correlation matrix
-get_lower_tri<-function(x){
-  x[upper.tri(x)] <- NA
-  return(x)
-}
-
-# Get upper triangle of the correlation matrix
-get_upper_tri <- function(x){
-  x[lower.tri(x)]<- NA
-  return(x)
-}
-
-# Reorder the correlation matrix and alter the shape of correlation data into triangle form
-reorder_cormat <- function(x){
-  # Use correlation between variables as distance
-  dd <- as.dist((1-x)/2)
-  hc <- hclust(dd)
-  x <- x[hc$order, hc$order]
-}
-
-# Creating correlation matrix which is reordered with upper triple form
-library(reshape2)
-reorder_correlation <- function(x){
-  x <- reorder_cormat(x)
-  y <- get_upper_tri(x)
-  return(y)
-  
-}
-
-library(ggplot2)
-# Create a ggheatmap
-ggheatmap <- function(x, m){
-  ggplot(x, aes(Var2, Var1, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0, limit = c(-1,1), space = "Lab", 
-                       name="Pearson\nCorrelation") +
-  theme_minimal()+ # minimal theme
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
-                                   size = 12, hjust = 1))+
-  coord_fixed()+ #add correlation coefficients on the heatmap
-    geom_text(aes(Var2, Var1, label = value), color = "black", size = 3) +
-    theme(
-      axis.title.x = element_blank(),
-      axis.title.y = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.border = element_blank(),
-      panel.background = element_blank(),
-      axis.ticks = element_blank(),
-      legend.justification = c(1, 0),
-      legend.position = c(0.5, 0.7),
-      legend.direction = "horizontal")+
-    guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
-                                 title.position = "top", title.hjust = 0.5))+
-    # Input title of the graph
-    ggtitle(m) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-}
-
-##Aggregated function for ggheatmap to use function with only one command
-heatmap <- function(x, m){
-  y <- round(cor(x),2)
-  y <- melt(reorder_correlation(y), na.rm = TRUE)
-  ggheatmap(y, m)
 }
 
 #save functions in file for loading them in Part01 and Part02
