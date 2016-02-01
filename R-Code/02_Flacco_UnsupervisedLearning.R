@@ -983,6 +983,7 @@ scatterplot3d(bfeats3.pca_cor.ela$scores[which(metadata3[,1]==3& bfeats3[,1]==2)
 
 #2.3.4 Self-Organising Maps (SOM) for Clustering
 section.new("2-3-4")
+require(kohonen)
 
 # Calculate the SOM model of all the general data from the dataset
 som.model.bfeats3.s = som.custom(bfeats3.s)
