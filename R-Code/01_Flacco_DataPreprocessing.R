@@ -2,6 +2,7 @@
 # Team Members
 # Christian Siemen (394724)
 # Lucas Stegger (394881)
+# Martin Kubicki (382577)
 # Yongsun Park (425844)
 # Daniel Carriola (425699)
 # Gino Coletti (425904)
