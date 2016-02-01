@@ -525,7 +525,7 @@ save(bfeats.boxcox,bfeats.boxcox2, file="../3-boxcox.RData")
 #apparently apply the boxcox to the subsets does not retrieve a good result when looking at the SW-test for the
 #whole dataset
 #mean 1.031e-05
-bfeats.boxcox2.sw_pvalue = sapply(as.data.frame(bfeats.boxcox), function(x) {shapiro.test(as.numeric(x))$p.value})
+bfeats.boxcox2.sw_pvalue = sapply(as.data.frame(bfeats.boxcox2), function(x) {shapiro.test(as.numeric(x))$p.value})
 summary(bfeats.boxcox2.sw_pvalue)
 which(bfeats.boxcox2.sw_pvalue > 0.01)
 
